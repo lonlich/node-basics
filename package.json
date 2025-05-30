@@ -9,6 +9,7 @@
     "build": "webpack --config webpack.prod.js"
   },
   "keywords": [],
+  "type": "module",
   "author": "",
   "license": "ISC",
   "description": "",

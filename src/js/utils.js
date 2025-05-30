@@ -1,3 +1,6 @@
+const isBrowser = typeof window !== 'undefined';
+const isNode = typeof process !== 'undefined' && process.versions?.node;
+
 //capitalize the first char of a string
 export function capitalizeFirstChar(input) {
   if (!input) {
@@ -47,12 +50,12 @@ export function createDeleteButton(textContent, className = "delete-btn") {
 
 // Media Breakpoints
 
-const desktop = window.matchMedia('(min-width: 1200px)');
-const tabletL = window.matchMedia('(min-width: 1024px) and (max-width: 1199px)'); //Tablet Landscape
-const tabletP = window.matchMedia('(min-width: 768px) and (max-width: 1023px)'); // Tablet Portrait
-const phoneL = window.matchMedia('(min-width: 440px) and (max-width: 767px)'); // Phone Large
-const phoneS = window.matchMedia('(max-width: 439px)'); // Phone Small
-const totalBlockMobileLayoutBreakpoint = window.matchMedia('(max-width: 600px)');
+// const desktop = window.matchMedia('(min-width: 1200px)');
+// const tabletL = window.matchMedia('(min-width: 1024px) and (max-width: 1199px)'); //Tablet Landscape
+// const tabletP = window.matchMedia('(min-width: 768px) and (max-width: 1023px)'); // Tablet Portrait
+// const phoneL = window.matchMedia('(min-width: 440px) and (max-width: 767px)'); // Phone Large
+// const phoneS = window.matchMedia('(max-width: 439px)'); // Phone Small
+// const totalBlockMobileLayoutBreakpoint = window.matchMedia('(max-width: 600px)');
 
 //utility functions
 
@@ -84,23 +87,28 @@ export function table(label, data) {
 }
 
 export function isDesktop() {
-  return desktop.matches;
+  if (!isBrowser) return false;
+  return window.matchMedia('(min-width: 1200px)');
 }
 
 export function isTabletL() {
-  return tabletL.matches;
+  if (!isBrowser) return false;
+  return window.matchMedia('(min-width: 1024px) and (max-width: 1199px)').matches;
 }
 
 export function isTabletP() {
-  return tabletP.matches;
+  if (!isBrowser) return false;
+  return window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches; 
 }
 
 export function isPhoneL() {
-  return phoneL.matches;
+  if (!isBrowser) return false;
+  return window.matchMedia('(min-width: 440px) and (max-width: 767px)').matches;
 }
 
 export function isPhoneP() {
-  return phoneS.matches;
+  if (!isBrowser) return false;
+  return window.matchMedia('(max-width: 439px)').matches;
 }
 
 export function pluralize(quantity, singular, plural) {
