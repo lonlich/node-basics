@@ -1,0 +1,8 @@
+com:lonlich/node-basics.git
+   e9d8d78..221eef5  main -> main
+PS C:\Users\Admin\Dropbox\repos\node-basics> git push
+Everything up-to-date
+PS C:\Users\Admin\Dropbox\repos\node-basics> node src/app.js
+📋 📋 Logger:
+ hello`12 world
+PS C:\Users\Admin\Dropbox\repos\node-basics>
