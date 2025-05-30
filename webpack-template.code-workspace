@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Пример: отключить предупреждения от eslint, если нужно
+    // "eslint.enable": false
+  }
+}
