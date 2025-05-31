@@ -129,10 +129,16 @@ function fetchImgsChain(count) {
   .catch(err => warn(err))
 }
 
-log('===BEGIN====')
-fetchImgsChain(5);
-log('делаем UI-стафф');
-log('делаем всякое');
+// log('===BEGIN====')
+// fetchImgsChain(5);
+// log('делаем UI-стафф');
+// log('делаем всякое');
+
+fetch('https://dog.ceo/api/breeds/image/random')
+  .then(res => res.blob())
+  .then(blob => log(blob))
+
+  //TODO: узнать про finally
 
 
   /* 
