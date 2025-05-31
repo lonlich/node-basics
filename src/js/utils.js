@@ -68,8 +68,19 @@ export function createDeleteButton(textContent, className = "delete-btn") {
 //   console.log(`📋 ${label}:`);
 //   console.table(message);
 // }
+
+export function block(ms, callback) {
+  callback();
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    //пустой цикл для блокировки потока
+  }
+  log(`${ms/1000} seconds passed`)
+}
 export function log(...args) {
-  console.log('📋 📋 Logger:\n', ...args);
+  // console.log('📋 📋 Logger:\n', ...args);
+  console.log(...args);
+
 }
 
 
