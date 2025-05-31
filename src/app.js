@@ -69,22 +69,70 @@ async function fileRequestSim() {
 
 // log(delay)
 
-log('начинаю fetch')
+const imgs = [];
 
-async function fetchAPI() {
+async function fetchImgsAwait(count) {
   try {
-    const res = await fetch('https://dog.ceo/api/breeds/image/random');
-    const jsonRes = await res.json();
-    table(jsonRes);
-  } catch (error) {
+    log('about to fetch')
+    for (let index = 0; index < count; index++) {
+      const res = await fetch('https://dog.ceo/api/breeds/image/random');
+      log('ended fetch, begin res.json')
+      const jsonRes = await res.json();
+      log('добавляю картинку в массив...')
+      imgs.push(jsonRes.message)
+    }
+    table(imgs);
+
+  } 
+  catch (error) {
     log('ОШИБКА')
     log(error)
   }
 }
-log('закончил fetch')
 
-fetchAPI();
+function mainAwait() {
+  log('===BEGIN====')
+  fetchImgsAwait(5);
+  log('делаем UI-стафф');
+  log('делаем всякое');
+}
 
+//mainAwait();
+
+function fetchImgsChain(count) {
+
+  const promises = [];
+
+  for (let index = 0; index < count; index++) {
+    
+    const promise  = fetch('https://dog.ceo/api/breeds/image/random')
+      .then(res => {
+        log('ended fetch, begin res.json')
+        return res.json();
+      })
+      .then((jsonRes) => {
+        log(`Добавляю ${index} картинку в массив`);
+        imgs.push(jsonRes.message)
+      })
+      .catch(err => {
+        log(`ОШИБКА: ${err}`)
+      })
+
+    promises.push(promise);
+  }
+
+  Promise.all(promises)
+  .then(() => {
+    log('показываю imgs');
+    table(imgs);
+  })
+  .catch(err => warn(err))
+}
+
+log('===BEGIN====')
+fetchImgsChain(5);
+log('делаем UI-стафф');
+log('делаем всякое');
 
 
   /* 
