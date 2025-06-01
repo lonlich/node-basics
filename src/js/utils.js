@@ -78,8 +78,8 @@ export function block(ms, callback) {
   log(`${ms/1000} seconds passed`)
 }
 export function log(...args) {
-  // console.log('📋 📋 Logger:\n', ...args);
-  console.log(...args);
+  console.log('📋 Logger:\n', ...args);
+  // console.log(...args);
 
 }
 

@@ -7,6 +7,7 @@ import {
 } from "./js/utils.js";
 
 import fs from 'fs';
+import axios, { Axios } from 'axios';
 
 
 // fs.readFile('src/test.txt', (err, data) => {
@@ -134,9 +135,9 @@ function fetchImgsChain(count) {
 // log('делаем UI-стафф');
 // log('делаем всякое');
 
-fetch('https://dog.ceo/api/breeds/image/random')
-  .then(res => res.blob())
-  .then(blob => log(blob))
+// fetch('https://dog.ceo/api/breeds/image/random')
+//   .then(res => res.blob())
+//   .then(blob => log(blob))
 
   //TODO: узнать про finally
 
@@ -148,3 +149,11 @@ fetch('https://dog.ceo/api/breeds/image/random')
 4. UI updated
 5. "File has been processed"
 */
+
+axios
+  .get('https://dog.ceo/api/breeds/image/random')
+  .then(res => {
+    log(`Status code: ${res.status}`);
+    log(res.data.message);
+  })
+  .catch(err => warn(`Error message: ${err.message}`))
