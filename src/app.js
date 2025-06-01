@@ -8,7 +8,18 @@ import {
 
 import fs from 'fs';
 import axios, { Axios } from 'axios';
+import http from 'node:http'
 
+const server = http.createServer((req, res) => {
+  log('Привет');
+  res.writeHead()
+});
+
+server.listen(3000, () => {
+  log('Сервер запущен на порту 3000');
+})
+
+//TODO: включить автодополнение яункций
 
 // fs.readFile('src/test.txt', (err, data) => {
 //     if (err) log(err);
@@ -130,6 +141,26 @@ function fetchImgsChain(count) {
   .catch(err => warn(err))
 }
 
+async function postAndPut() {
+  axios
+    .post('https://jsonplaceholder.typicode.com/posts', {
+      title: 'Hello',
+      body: 'World',
+      userId: Date.now()
+    })
+    .then(res => log(res.data))
+    .catch(err => log(err.message));
+  
+  axios
+  .delete('https://jsonplaceholder.typicode.com/posts/1')
+  .then(res => log(res.status))
+  .catch(err => log(`НЕ ОБНОВИЛ: ${err.message}`));
+}
+
+// postAndPut();
+
+
+
 // log('===BEGIN====')
 // fetchImgsChain(5);
 // log('делаем UI-стафф');
@@ -153,7 +184,9 @@ function fetchImgsChain(count) {
 axios
   .get('https://dog.ceo/api/breeds/image/random')
   .then(res => {
-    log(`Status code: ${res.status}`);
-    log(res.data.message);
-  })
-  .catch(err => warn(`Error message: ${err.message}`))
+    // log(`Status code: ${res.status}`);
+    // log(res.data.message);
+    })
+  .catch(err => warn(`Error message: ${err.message}`));
+
+
