@@ -10,14 +10,87 @@ import fs from 'fs';
 import axios, { Axios } from 'axios';
 import http from 'node:http'
 
+const body = 'ABIRVALG'
+
+//Формат куки: 'Set-Cookie': `name=value; HttpOnly; Secure; SameSite=Strict`
+
+/**
+ * Creates an HTTP server that responds to all requests with a simple HTML page.
+ * 
+ * Response headers include:
+ * - Custom header 'Test-Header'
+ * - Content-Type set to 'text/html; charset=utf-8'
+ * - CORS headers allowing all origins and common methods/headers
+ * - Cache control headers to prevent caching
+ * - 'X-Powered-By' set to 'Node.js'
+ * 
+ * The response body contains a UTF-8 encoded HTML message in Russian and English.
+ * 
+ * Logs success or error after sending the response.
+ * 
+ * @param {import('http').IncomingMessage} req - The incoming HTTP request.
+ * @param {import('http').ServerResponse} res - The HTTP response object.
+ */ 
+
+function setCookieWithSecureFlags(name, value) {
+  return `${name}=${value}; HttpOnly; Secure; SameSite=Strict`
+}
+
 const server = http.createServer((req, res) => {
-  log('Привет');
-  res.writeHead()
+  res.setHeader('Test-Header', 'herro');
+  res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Set-Cookie': [
+      `${setCookieWithSecureFlags('sessionId', '100')}`,
+      'theme=dark',
+      'id=69'
+    ],
+    'location': '/new-location'
+  });
+  res.end(
+    `<div class="container">
+    <meta charset="UTF-8">
+    <h1>Hello World!</h1>
+    <p>Это мой первый сервер на Node.js</p>
+    </div>`,
+    (err) => {
+      if (err) {
+        log("Ошибка при отправке ответа:", err);
+        res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end("Internal Server Error");
+      } else {
+        
+      }
+    }
+    
+  );
+  log(req.headers.cookie)
 });
+
+
+
+
+// const server = http.createServer((req, res) => {
+//   res.setHeader('Content-Type', 'text/html');
+//   res.setHeader('X-Foo', 'bar');
+//   res.writeHead(200, { 'Content-Type': 'text/plain' });
+//   res.end('ok');
+// });
 
 server.listen(3000, () => {
   log('Сервер запущен на порту 3000');
 })
+
+// Create a local server to receive data from
+// const server = http.createServer((req, res) => {
+//   res.writeHead(200, { 'Content-Type': 'application/json' });
+//   res.end(JSON.stringify({
+//     data: 'Hello World!',
+//   }));
+// });
+
+// server.listen(8000);
+
 
 //TODO: включить автодополнение яункций
 
