@@ -1,3 +1,5 @@
+//TODO: youtube timecode, region, city
+
 import {
   log,
   warn,
@@ -32,10 +34,12 @@ const body = 'ABIRVALG'
  * @param {import('http').ServerResponse} res - The HTTP response object.
  */ 
 
+//устанавливает куки с secure-флагами
 function setCookieWithSecureFlags(name, value) {
   return `${name}=${value}; HttpOnly; Secure; SameSite=Strict`
 }
 
+//создает сервер, в колбеке - обработка каждого входящего запроса. Req - запрос, Res - ответ
 const server = http.createServer((req, res) => {
   res.setHeader('Test-Header', 'herro');
   res.writeHead(200, {
@@ -62,12 +66,14 @@ const server = http.createServer((req, res) => {
         
       }
     }
-    
   );
   log(req.headers.cookie)
 });
 
-
+//запуск сервера на localhost:3000
+server.listen(3000, () => {
+  log('Сервер запущен на порту 3000');
+});
 
 
 // const server = http.createServer((req, res) => {
@@ -77,9 +83,7 @@ const server = http.createServer((req, res) => {
 //   res.end('ok');
 // });
 
-server.listen(3000, () => {
-  log('Сервер запущен на порту 3000');
-})
+
 
 // Create a local server to receive data from
 // const server = http.createServer((req, res) => {
@@ -156,12 +160,18 @@ async function fileRequestSim() {
 
 const imgs = [];
 
+//async позволяет использовать внутри await - симулировать синхронный код из асинхронных операций
 async function fetchImgsAwait(count) {
+  //формат async - try, catch (ошибок)
   try {
     log('about to fetch')
     for (let index = 0; index < count; index++) {
+
+      //следующие операции выполняются только после получения результата await
       const res = await fetch('https://dog.ceo/api/breeds/image/random');
       log('ended fetch, begin res.json')
+
+      //fetch возвращает Promise, с которым нельзя работать напрямую. Его нужно превратить в подходящий формат через .json()
       const jsonRes = await res.json();
       log('добавляю картинку в массив...')
       imgs.push(jsonRes.message)
@@ -184,17 +194,22 @@ function mainAwait() {
 
 //mainAwait();
 
+
+//то же самое, что и в async, можно сделать через цепочку .then .then .catch
 function fetchImgsChain(count) {
 
   const promises = [];
 
   for (let index = 0; index < count; index++) {
     
+    //fetch возвращает Promise
     const promise  = fetch('https://dog.ceo/api/breeds/image/random')
+      //затем этот Promise парсится через .json()
       .then(res => {
         log('ended fetch, begin res.json')
         return res.json();
       })
+      //затем ответ (в данном случае - URL картинки) через response.message добавляется в хранилище
       .then((jsonRes) => {
         log(`Добавляю ${index} картинку в массив`);
         imgs.push(jsonRes.message)
@@ -206,6 +221,7 @@ function fetchImgsChain(count) {
     promises.push(promise);
   }
 
+  //Promise.all принимает массив промисов и выполняется только после того, как все они завершились
   Promise.all(promises)
   .then(() => {
     log('показываю imgs');
@@ -214,6 +230,7 @@ function fetchImgsChain(count) {
   .catch(err => warn(err))
 }
 
+//метод post - добавляет информацию на сервер
 async function postAndPut() {
   axios
     .post('https://jsonplaceholder.typicode.com/posts', {
@@ -254,6 +271,7 @@ async function postAndPut() {
 5. "File has been processed"
 */
 
+//метод get - получает информацию с сервера
 axios
   .get('https://dog.ceo/api/breeds/image/random')
   .then(res => {
@@ -261,5 +279,13 @@ axios
     // log(res.data.message);
     })
   .catch(err => warn(`Error message: ${err.message}`));
+
+
+
+// log(new Date())
+
+// const time = new Date().toLocaleString();
+// log(time)
+
 
 
