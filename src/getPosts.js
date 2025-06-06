@@ -24,38 +24,28 @@ const server = http.createServer((req, res) => {
     }
 
     if(req.url === '/posts') {
+        log('получен запрос на посты')
         res.writeHead(200, 'writeHead:OK', {'Content-Type': 'application/json'});
 
         const posts = [
-          { id: 1, title: "post 1", body: "lorem ipsum dolor sit amet 1" },
-          {
-            id: 2,
-            title: "post 2",
-            body: "lorem ipsum dolor sit amet 2",
-          },
-          {
-            id: 3,
-            title: "post 3",
-            body: "lorem ipsum dolor sit amet 3",
-          },
+            { id: 1, title: "post 1", body: "lorem ipsum dolor sit amet 1" },
+            { id: 2, title: "post 2", body: "lorem ipsum dolor sit amet 2" },
+            { id: 3, title: "post 3", body: "lorem ipsum dolor sit amet 3" },
         ];
-        res.end(JSON.stringify(posts), err => {
-            if(err) {
-                warn(err);
-            } else {
-                log('все ок')
-            }
-        });
+
+        res.end(JSON.stringify(posts), err => err ? warn(err) : log('посты отданы'));
+        };
     }
-});
+);
 
 server.listen(3000, () => { 
     log('server has started');
 });
 
 //формирование GET-запроса на получение постов
+log('отправляю запрос на посты');
 axios
     .get('http://localhost:3000/posts')
-    .then(log('посты получены'))
+    .then(() => log('посты получены'))
     .catch(err => log(err))
 

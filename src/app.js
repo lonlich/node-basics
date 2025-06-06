@@ -1,5 +1,3 @@
-//TODO: youtube timecode, region, city
-
 import {
   log,
   warn,
@@ -8,9 +6,12 @@ import {
   //formatPrice,
 } from "./js/utils.js";
 
-import fs from 'fs';
+import fs from 'fs/promises';
 import axios, { Axios } from 'axios';
-import http from 'node:http'
+import http from 'node:http';
+import url from 'node:url';
+import EventEmitter from 'node:events';
+const eventEmitter = new EventEmitter();
 
 const body = 'ABIRVALG'
 
@@ -51,6 +52,15 @@ const server = http.createServer((req, res) => {
     ],
     'location': '/new-location'
   });
+
+  if (req.url === '/user') {
+    res.write('this is user profile page');
+  }
+
+  if (req.url === '/loser') {
+    res.write('this is user loser page');
+  }
+  
   res.end(
     `<div class="container">
     <meta charset="UTF-8">
@@ -70,9 +80,10 @@ const server = http.createServer((req, res) => {
   log(req.headers.cookie)
 });
 
+const port = 3000;
 //запуск сервера на localhost:3000
-server.listen(3000, () => {
-  log('Сервер запущен на порту 3000');
+server.listen(port, () => {
+  log(`Сервер запущен на порту ${port}, открыть в браузере: http://localhost:${port}`);
 });
 
 
