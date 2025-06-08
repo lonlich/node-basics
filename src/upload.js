@@ -25,17 +25,21 @@ http.createServer((req, res) => {
 
     form.parse(req, (err, fields, files) => {
       if (err) {
-        // res.writeHead(500);
+        res.writeHead(500);
         res.end('Ошибка при загрузке файла');
         return;
       };
-      log(`Поля формы: ${fields}`);
-      log(`Файлы: ${files[1]}`);
+      res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+      res.write('<h2>Информация о загруженном файле:</h2>');
+      res.write(`<pre>${JSON.stringify(files, null, 2)}</pre>`);
+
+      res.write('<h2>Поля формы:</h2>');
+      res.write(`<pre>${JSON.stringify(fields, null, 2)}</pre>`);
       res.end();
     });
   }
 
-  //обработка GET-запроса (выдача html-файла)
+  else {//обработка GET-запроса (выдача html-файла)
   const reqFile = './src' + req.url + '.html';
 
   readFile(reqFile, 'utf-8')
@@ -47,5 +51,7 @@ http.createServer((req, res) => {
     warn(`ОШИБКА ЧТЕНИЯ ФАЙЛА: ${err}`);
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<h1>404, страница ${reqFile} ${upperCase('НЕ НАЙДЕНА!!!')}!</h1>`);
-  });})
-  .listen(3000, () => {log('Server running!')});
+  });}})
+  .listen(8888, () => {
+    log('Server running!')
+  });
