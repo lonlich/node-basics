@@ -186,5 +186,13 @@ export function measure(label, fn) {
   return result; // возвращаем результат, если нужен
 }
 
+export async function fakeApiCall(delay) {
+  return new Promise(resolve =>
+    setTimeout(() => resolve('OK'), delay)
+  );
+}
+
+export const now = new Date(Date.now());
+
 
 
