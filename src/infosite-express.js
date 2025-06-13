@@ -43,6 +43,10 @@ app.use(express.json());
 app.set('json spaces', 2);
 app.use(express.urlencoded({ extended: true }));
 
+//use EJS as template engine
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
 /* 
 1. Взять url из запроса (/name)
 2. Получить из url название html-файла
@@ -56,6 +60,17 @@ app.use(serveHTML);
 
 //serve static files
 app.use(express.static(STATIC_FOLDER_PATH));
+
+//ejs views
+app.get('/ejs', (req, res) => {
+    res.render('ejs-index', { 
+        title: 'Тайтл',
+        heading: 'Хединг',
+        message: 'Мессидж',
+        
+        items: [ 'cat', 'dog', 'bird' ]
+    });
+})
 
 app.post('/submit', (req, res) => {
     log(req.body)
