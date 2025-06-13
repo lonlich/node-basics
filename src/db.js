@@ -52,6 +52,9 @@ import formidable from "formidable";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
+//custom errors
+import { CustomNotFoundError } from "./errors/customNotFoundError.js";
+
 import express from "express";
 const app = express();
 
@@ -67,6 +70,6 @@ const authors = [
 ]
 
 export async function getAuthorById(authorId) {
-    throw new Error('Ошибка получения автора из БД');
+    throw new CustomNotFoundError('Автор не найден (кастомная ошибка)');
     return authors.find(author => author.authorId === authorId)
 }

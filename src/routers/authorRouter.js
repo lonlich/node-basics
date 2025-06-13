@@ -44,12 +44,13 @@ export const authorRouter = express.Router();
 authorRouter.get('/:authorId', getAuthorByIdHandler);
 
 authorRouter.use((err, req, res, next) => {
-    log('Hi from error middleware')
-    res.status().json({ 
+    log('Hi from error middleware');
+    log(err.statusCode);
+    res.status(err.statusCode || 500).json({ 
         error: 'Ошибка сервера', 
         details: err.message, 
         name: err.name,
-        code: err.statusCode || 'Хз какой код',
+        code: err.statusCode || 'Какой-то код ошибки',
         stack: err.stack 
     });
 })

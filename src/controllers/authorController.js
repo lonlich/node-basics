@@ -58,7 +58,6 @@ export async function getAuthorByIdHandler(req, res, next) {
     
         res.send(`Имя автора: ${author.name}`)
     } catch (err) {
-        console.error('Это ошибка в блоке catch', err.message)
         next(err);
     }
 };
