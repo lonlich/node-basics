@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments List</title>
+</head>
+<body>
+  <h1>Комментарии</h1>
+  <p>Всего <%= comments.length %> комментариев в списке</p>
+  <ul>
+    <% comments.forEach((comment, i) => { %>
+        <li><%= ++i %> комментарий: <%= comment %></li>
+    <% 
+    }); 
+    console.log('Успех!');%>
+  </ul>
+  
+  <a href="/comment-form">
+    <button type="button">Назад к комменту</button>
+  </a>
+</body>
+</html>

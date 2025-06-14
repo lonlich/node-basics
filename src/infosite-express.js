@@ -44,8 +44,8 @@ app.set('json spaces', 2);
 app.use(express.urlencoded({ extended: true }));
 
 //use EJS as template engine
-app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 /* 
 1. Взять url из запроса (/name)
@@ -70,7 +70,36 @@ app.get('/ejs', (req, res) => {
         
         items: [ 'cat', 'dog', 'bird' ]
     });
-})
+});
+
+//comment form
+
+const comments = [];
+
+app.get('/comment-form', (req, res) => {
+    res.render('comment-form');
+});
+
+app.post('/post-comment', (req, res) => {
+    comments.push(req.body.comment);
+    res.redirect('/all-comments');
+});
+
+app.get('/all-comments', (req, res) => {
+    log('я тут');
+    res.render('all-comments', {
+        comments: comments
+    }, 
+    (err, html) => {
+        if (err) {
+            log(`Ошибка рендеринга шаблона на странице ${req.path}`);
+            log(err)
+            res.redirect('/post-comment-failed');
+        }
+        res.send(html);
+    }
+);
+});
 
 app.post('/submit', (req, res) => {
     log(req.body)
