@@ -56,6 +56,11 @@ userRouter.get('/', (req, res, next) => {
     res.send('Это список пользователей');
 });
 
+userRouter.get('/:username/profile', (req, res) => {
+    log('я тут');
+    res.render('profile-page');
+});
+
 userRouter.get('/json', (req, res) => {
     res.json({
         id: 1,

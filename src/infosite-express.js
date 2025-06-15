@@ -19,6 +19,7 @@ import {
 import { serveHTML } from "./serveHTML.js";
 import { userRouter } from "./routers/userRouter.js";
 import { authorRouter } from "./routers/authorRouter.js";
+import { setupLocals } from "./middleware/setupLocals.js";
 
 import fs from "fs";
 import { access } from "fs/promises";
@@ -55,7 +56,12 @@ app.set("views", path.join(__dirname, "views"));
    - если нет => показать 404.html
 */
 
-//
+app.use(setupLocals);
+
+//include footer on all pages
+
+
+
 app.use(serveHTML);
 
 //serve static files
@@ -67,7 +73,6 @@ app.get('/ejs', (req, res) => {
         title: 'Тайтл',
         heading: 'Хединг',
         message: 'Мессидж',
-        
         items: [ 'cat', 'dog', 'bird' ]
     });
 });
