@@ -15,8 +15,6 @@ export const userCreationControllerPost = (req, res) => {
     const user = req.body;
     user.id = userbase.getUsers().length + 1;
     userbase.addUser(user);
-    
-    console.table(userbase);
-    console.log(req.params)
+
     res.redirect('/');
 }

@@ -6,11 +6,15 @@ import { validationResult } from "express-validator";
 
 export const userEditControllerPost = (req, res) => {
     const errors = validationResult(req);
-    
+
     if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
     }
-    console.log(req.body);
-    userbase.updateUser(req.params.id, req.body.firstname, req.body.lastname);
-    res.redirect('/');
+
+    userbase.updateUser({
+        id: +req.params.id,
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+    });
+    res.redirect("/");
 };
