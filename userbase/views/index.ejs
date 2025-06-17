@@ -1,0 +1,22 @@
+<h2>Список пользователей:</h2>
+
+<ul>
+    <% users.forEach((user, i)=> {%>
+        <li>
+            <p>
+                <%= ++i %> пользователь:
+            </p>
+            <p>ID: <%= user.id %>
+            </p>
+            <p>Имя: <%= user.firstname %>
+            </p>
+            <p>Фамилия: <%= user.lastname %>
+            </p>
+        </li>
+        <a href="/<%= user.id %>/edit">Редактировать</a>
+        <a href="/<%= user.id %>/delete">Удалить</a>
+        <% }) %>
+
+</ul>
+
+<a href="/create-user">Создать пользователя</a>
