@@ -1,17 +1,19 @@
 <h2>Список пользователей:</h2>
 
 <ul>
-    <% users.forEach((user, i)=> {%>
+
+    <% users.forEach((user, i) => {%>
         <li>
             <p>
                 <%= ++i %> пользователь:
             </p>
-            <p>ID: <%= user.id %>
-            </p>
-            <p>Имя: <%= user.firstname %>
-            </p>
-            <p>Фамилия: <%= user.lastname %>
-            </p>
+            <% for (const key in fieldLabels) { %>
+                <p>
+                    <% if (user[key]) { %>
+                        <%= fieldLabels[key] %>: <%= user[key] %>
+                    <% } %>
+                </p>
+                <% } %>
         </li>
         <a href="/<%= user.id %>/edit">Редактировать</a>
         <a href="/<%= user.id %>/delete">Удалить</a>

@@ -4,7 +4,7 @@ import {
     table,
     block,
     fakeApiCall,
-    now
+    now,
     //formatPrice,
 } from "./js/utils.js";
 
@@ -13,12 +13,12 @@ import {
     __dirname,
     PORT,
     STATIC_FOLDER_PATH,
-    PAGE404_FILE
-} from "./config.js"
+    PAGE404_FILE,
+} from "./config.js";
 
 import express from "express";
-import expressLayouts from 'express-ejs-layouts';
-import { body, validationResult } from 'express-validator';
+import expressLayouts from "express-ejs-layouts";
+import { body, validationResult } from "express-validator";
 import axios, { Axios } from "axios";
 
 // import { serveHTML } from "./serveHTML.js";
@@ -29,6 +29,7 @@ import { userCreationControllerPost } from "./controllers/userCreationController
 import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
 import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
 import { userbase } from "./storage/userbase.js";
+import { fieldLabels } from "./constants/fieldLabels.js";
 
 import fs from "fs";
 import { access } from "fs/promises";
@@ -56,11 +57,11 @@ app.set("views", path.join(__dirname, "views"));
 
 //use express-ejs-layouts
 app.use(expressLayouts);
-app.set('layout', 'layout')
+app.set("layout", "layout");
 
 //body parsing
 app.use(express.json());
-app.set('json spaces', 2);
+app.set("json spaces", 2);
 app.use(express.urlencoded({ extended: true }));
 
 //set up res.locals
@@ -68,19 +69,22 @@ app.use(setupLocals);
 
 /* MAIN */
 
-app.get('/', (req, res) => {  
-    res.render('index', { users : userbase.getUsers() });
+app.get("/", (req, res) => {
+    res.render("index", { 
+        users: userbase.getUsers(),
+        fieldLabels,
+    });
 });
 
 //create user
-app.get('/create-user', (req, res) => {
-    res.render('create-user', { heading: 'Создание нового пользователя' });
-})
-app.post('/create-user', validateUser, userCreationControllerPost);
+app.get("/create-user", (req, res) => {
+    res.render("create-user", { heading: "Создание нового пользователя" });
+});
+app.post("/create-user", validateUser, userCreationControllerPost);
 
 //edit user
-app.get('/:id/edit', userEditControllerGet);
-app.post('/:id/edit', validateUpdatedUser, userEditControllerPost);
+app.get("/:id/edit", userEditControllerGet);
+app.post("/:id/edit", validateUpdatedUser, userEditControllerPost);
 
 //запуск сервера
 app.listen(PORT, () => {

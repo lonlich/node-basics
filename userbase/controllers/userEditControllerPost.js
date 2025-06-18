@@ -12,9 +12,12 @@ export const userEditControllerPost = (req, res) => {
     }
 
     userbase.updateUser({
-        id: +req.params.id,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
+        props: {
+            id: +req.params.id,
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            email: 'hello@123.com'
+        },
     });
     res.redirect("/");
 };
