@@ -1,0 +1,31 @@
+<%  
+    const fs = formState || {};
+    const errors = fs.errors || false;
+    const hasErrors = (errors && errors.length > 0);
+    const hasValues = fs.hasValues || false;
+    const user = fs.user || {};
+%>
+<form action="<%= fs.endpoint %>" method="post">
+    <% Object.keys(userFormSchema).forEach((key) => {
+        const inputValue = hasValues ? user[key] : '';
+        const errorMessage = hasErrors ? errors.find(err => err.path === key)?.msg : '';
+
+        // if (hasErrors) {
+        //     const error = errors.find(err => err.path === key);
+        //     console.log('error: ', error);
+        //     errorMessage = error?.msg;
+        //     console.log('errorMessage наверху:', errorMessage);
+        // }
+        // const errorMessage = hasErrors ? errors.message : '';
+        %>
+        <label for="<%= key %>"><%= userFormSchema[key].label %></label>
+        <input value="<%= inputValue %>" type="<%= userFormSchema[key].type %>" id="<%= key %>" name="<%= key %>" />
+        <% if (errorMessage) { 
+            console.log('errorMessage', errorMessage);
+            console.log('Есть ошибка!');%>
+            <p><%= errorMessage %></p>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
+

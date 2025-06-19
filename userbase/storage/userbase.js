@@ -1,27 +1,43 @@
 const users = [];
 
-const addUser = (user) => users.push(user);
-
-const getUsers = () => users;
-
-const findUser = (userId) => users.find((user) => user.id === userId);
-
-const updateUser = ({ props }) => {
+export const userbase = {
     
-    const updatedUser = findUser(props.id);
-    
-    if (!updatedUser) {
-        return console.log(`Пользователь с id ${values.id} не найден`);
-    }
-    
-    for (const prop in props) {
-        console.log(prop);
-        updatedUser[prop] = props[prop];
-    }
-    // updatedUser.firstname = values.firstname;
-    // updatedUser.lastname = values.lastname;
+    addUser(user) {
+        users.push(user);
+    },
+
+    getUsers() {
+        return users;
+    },
+
+    findUser(userId) {
+        return users.find((user) => user.id === Number(userId));
+    },
+
+    updateUser({ props }) {
+        const updatedUser = this.findUser(props.id);
+
+        if (!updatedUser) {
+            console.log(`Пользователь с id ${props.id} не найден`);
+            return;
+        }
+
+        for (const prop in props.formData) {
+            updatedUser[prop] = props.formData[prop];
+        }
+    },
+
+    deleteUser(userId) {
+        //находим индекс пользователя, которого надо удалить
+        const index = users.findIndex(user => user.id === userId)
+        console.log(index);
+
+        //findIndex возвращает -1, если индекс не найден. Если передать -1 в splice, он удалит последний элемент (!)
+        if (index === -1) {
+            return console.log(`Пользователь с id ${userId} не найден!`); 
+        }
+        users.splice(index, 1);
+        console.log(`Удалил пользователя с id ${userId}`);
+
+    },
 };
-
-export const userbase = { addUser, getUsers, findUser, updateUser };
-
-//TODO: переделать в объект values

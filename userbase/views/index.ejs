@@ -2,18 +2,18 @@
 
 <ul>
 
-    <% users.forEach((user, i) => {%>
+    <% users.forEach((user, i)=> {%>
         <li>
             <p>
                 <%= ++i %> пользователь:
             </p>
-            <% for (const key in fieldLabels) { %>
+            <% Object.keys(userFormSchema).forEach(key => {%>
                 <p>
                     <% if (user[key]) { %>
-                        <%= fieldLabels[key] %>: <%= user[key] %>
+                        <%= userFormSchema[key].label %>: <%= user[key] %>
                     <% } %>
                 </p>
-                <% } %>
+                <%}); %>
         </li>
         <a href="/<%= user.id %>/edit">Редактировать</a>
         <a href="/<%= user.id %>/delete">Удалить</a>

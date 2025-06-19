@@ -7,12 +7,21 @@ app.use(express.urlencoded({ extended: true }));
 
 export const userCreationControllerPost = (req, res) => {
     const errors = validationResult(req);
+    const user = req.body;
     
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        //return res.status(400).json({ errors: errors.array() });
+        return res.render('create-user', {
+            heading: 'Ошибка ввода данных, введите снова',
+            formState: {
+                endpoint: `/create-user`,
+                errors: errors.array(),  
+                hasValues: true,
+                user
+            }
+        })
     }
     
-    const user = req.body;
     user.id = userbase.getUsers().length + 1;
     userbase.addUser(user);
 

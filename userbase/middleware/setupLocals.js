@@ -1,3 +1,5 @@
+import { userFormSchema } from "../constants/userFormSchema.js";
+
 export function setupLocals(req, res, next) {
     res.locals.username = req.query.username || 'Гость';
     res.locals.theme = 'dark';
@@ -12,7 +14,10 @@ export function setupLocals(req, res, next) {
         { href: '/about', text: 'Абаут'},
         { href: '/users', text: 'Юзвери'},
         { href: '/comment-form', text: 'Оставить камент'}
-
     ]
+
+    //user-form
+    res.locals.userFormSchema = userFormSchema;
+
     next();
 }

@@ -25,11 +25,13 @@ import axios, { Axios } from "axios";
 import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
+import { userCreationControllerGet } from "./controllers/userCreationControllerGet.js";
 import { userCreationControllerPost } from "./controllers/userCreationControllerPost.js";
 import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
 import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
+import { userDeletionControllerGet } from "./controllers/userDeletionControllerGet.js";
 import { userbase } from "./storage/userbase.js";
-import { fieldLabels } from "./constants/fieldLabels.js";
+import { userFormSchema } from "./constants/userFormSchema.js";
 
 import fs from "fs";
 import { access } from "fs/promises";
@@ -70,21 +72,20 @@ app.use(setupLocals);
 /* MAIN */
 
 app.get("/", (req, res) => {
-    res.render("index", { 
-        users: userbase.getUsers(),
-        fieldLabels,
-    });
+    res.locals.users = userbase.getUsers();
+    res.render("index");
 });
 
 //create user
-app.get("/create-user", (req, res) => {
-    res.render("create-user", { heading: "Создание нового пользователя" });
-});
+app.get("/create-user", userCreationControllerGet);
 app.post("/create-user", validateUser, userCreationControllerPost);
 
 //edit user
 app.get("/:id/edit", userEditControllerGet);
 app.post("/:id/edit", validateUpdatedUser, userEditControllerPost);
+
+//delete user
+app.get('/:id/delete', userDeletionControllerGet)
 
 //запуск сервера
 app.listen(PORT, () => {
