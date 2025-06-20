@@ -25,11 +25,12 @@ import axios, { Axios } from "axios";
 import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
-import { userCreationControllerGet } from "./controllers/userCreationControllerGet.js";
-import { userCreationControllerPost } from "./controllers/userCreationControllerPost.js";
-import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
-import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
-import { userDeletionControllerGet } from "./controllers/userDeletionControllerGet.js";
+// import { userCreationControllerGet } from "./controllers/userCreationControllerGet.js";
+// import { userCreationControllerPost } from "./controllers/userCreationControllerPost.js";
+// import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
+// import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
+// import { userDeletionControllerGet } from "./controllers/userDeletionControllerGet.js";
+import { createUserGet, createUserPost, editUserGet, editUserPost, deleteUserGet } from "./controllers/userController.js";
 import { userbase } from "./storage/userbase.js";
 import { userFormSchema } from "./constants/userFormSchema.js";
 
@@ -50,6 +51,7 @@ import { fileURLToPath } from "url";
 
 //routers
 import { indexRouter } from "./routers/index-router.js";
+import { indexGet } from "./controllers/indexController.js";
 
 const app = express();
 
@@ -69,23 +71,25 @@ app.use(express.urlencoded({ extended: true }));
 //set up res.locals
 app.use(setupLocals);
 
+//serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 /* MAIN */
 
-app.get("/", (req, res) => {
-    res.locals.users = userbase.getUsers();
-    res.render("index");
-});
+app.get("/", indexGet);
 
 //create user
-app.get("/create-user", userCreationControllerGet);
-app.post("/create-user", validateUser, userCreationControllerPost);
+app.get("/create-user", createUserGet);
+app.post("/create-user", validateUser, createUserPost);
 
 //edit user
-app.get("/:id/edit", userEditControllerGet);
-app.post("/:id/edit", validateUpdatedUser, userEditControllerPost);
+app.get("/:id/edit", editUserGet);
+app.post("/:id/edit", validateUpdatedUser, editUserPost);
 
 //delete user
-app.get('/:id/delete', userDeletionControllerGet)
+app.get('/:id/delete', deleteUserGet)
+
+
 
 //запуск сервера
 app.listen(PORT, () => {

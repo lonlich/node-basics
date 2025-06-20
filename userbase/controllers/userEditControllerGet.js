@@ -11,16 +11,12 @@ export const userEditControllerGet = (req, res) => {
         console.log("Пользователь не найден!");
         return;
     }
-    // res.locals.endpoint = `/${user.id}/edit`;
-    // res.locals.heading = `Редактирование пользователя ${user.firstname}`;
-    // res.locals.user = user;
-    // res.locals.hasValues = true;
 
     res.render("edit-user", {
         heading: `Редактирование пользователя ${user.firstname}`,
-        formState: {
+        formData: {
             endpoint: `/${user.id}/edit`,
-            hasValues: true,
+            hasInputValues: true,
             user, 
         },
     });

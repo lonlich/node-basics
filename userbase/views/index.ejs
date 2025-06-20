@@ -7,10 +7,10 @@
             <p>
                 <%= ++i %> пользователь:
             </p>
-            <% Object.keys(userFormSchema).forEach(key => {%>
+            <% Object.keys(formSchema).forEach(key => {%>
                 <p>
                     <% if (user[key]) { %>
-                        <%= userFormSchema[key].label %>: <%= user[key] %>
+                        <%= formSchema[key].label %>: <%= user[key] %>
                     <% } %>
                 </p>
                 <%}); %>

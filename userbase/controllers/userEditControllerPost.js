@@ -7,14 +7,15 @@ import { validationResult } from "express-validator";
 export const userEditControllerPost = (req, res) => {
     const errors = validationResult(req);
     const user = req.body;
+    console.log('req.params:', req.params.id);
 
     if (!errors.isEmpty()) {
         return res.render('edit-user', {
             heading: 'Ошибка ввода данных, введите снова',
-            formState: {
-                endpoint: `/create-user`,
-                errors: errors.array(),  
-                hasValues: true,
+            formData: {
+                endpoint: `/${req.params.id}/edit`,
+                errorsArr: errors.array(),  
+                hasInputValues: true,
                 user
             }
         })

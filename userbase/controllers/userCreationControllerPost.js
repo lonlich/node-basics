@@ -13,11 +13,12 @@ export const userCreationControllerPost = (req, res) => {
         //return res.status(400).json({ errors: errors.array() });
         return res.render('create-user', {
             heading: 'Ошибка ввода данных, введите снова',
-            formState: {
+            formData: {
                 endpoint: `/create-user`,
-                errors: errors.array(),  
-                hasValues: true,
-                user
+                errorsArr: errors.array(),  
+                // hasErrors: !errors.isEmpty(),
+                hasInputValues: true,
+                user,
             }
         })
     }

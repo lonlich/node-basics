@@ -6,9 +6,8 @@ export const userCreationControllerGet = (req, res) => {
 
     res.render("create-user", {
         heading: "Создание нового пользователя",
-        formState: {
+        formData: {
             endpoint: `/create-user`,
-            hasValues: true,
         },
     });
 };
