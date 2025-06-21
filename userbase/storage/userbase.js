@@ -1,4 +1,17 @@
-const users = [];
+const users = [
+    {
+        id: 1,
+        firstname: 'MIKHAIL',
+        lastname: 'ORENKIN',
+        email: 'navi-lonely@mail.ru'
+    },
+    {
+        id: 2,
+        firstname: 'MIKHAIL',
+        lastname: 'Pupkin',
+        email: 'vasya@mail.ru'
+    }
+];
 
 export const userbase = {
     

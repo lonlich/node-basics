@@ -8,6 +8,8 @@ import {
     //formatPrice,
 } from "./js/utils.js";
 
+import './js/globals.js'
+
 import {
     __filename,
     __dirname,
@@ -30,7 +32,11 @@ import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
 // import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
 // import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
 // import { userDeletionControllerGet } from "./controllers/userDeletionControllerGet.js";
+
+//controllers
 import { createUserGet, createUserPost, editUserGet, editUserPost, deleteUserGet } from "./controllers/userController.js";
+import { searchController } from "./controllers/searchController.js";
+
 import { userbase } from "./storage/userbase.js";
 import { userFormSchema } from "./constants/userFormSchema.js";
 
@@ -89,9 +95,14 @@ app.post("/:id/edit", validateUpdatedUser, editUserPost);
 //delete user
 app.get('/:id/delete', deleteUserGet)
 
+//search user
+app.get('/search', searchController);
+
 
 
 //запуск сервера
 app.listen(PORT, () => {
     log(`Server running on port ${PORT}!`);
 });
+
+//TODO: проверить маршруты на соответствие REST-архитектуре
