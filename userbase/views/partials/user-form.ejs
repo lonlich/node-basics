@@ -7,7 +7,7 @@
     } = formData || {};
 %>
 <form action="<%= endpoint %>" method="post">
-    <% Object.keys(formSchema).forEach((field) => {%>
+    <% Object.keys(formSchema).forEach((field) => { %>
         <label for="<%= field %>"><%= formSchema[field].label %></label>
         <input 
             value="<%= user[field] %>" 

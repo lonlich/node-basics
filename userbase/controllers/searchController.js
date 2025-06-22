@@ -1,36 +1,26 @@
 import express from "express";
 const app = express();
 import { userbase } from "../storage/userbase.js";
+import { userFormSchema } from "../constants/userFormSchema.js";
 
+//GET
 export const searchController = (req, res) => {
-    // res.render('search');
-    // res.json(req.query);
-    log('req.query: ', req.query)
+    
+    //получаем массив всех юзеров из базы
     const users = userbase.getUsers();
 
-    const searchParams = Object.keys(req.query).filter(param => req.query[param].trim() !== '');
+    //определяем, какие поля были заполнены в форме поиска
+    // const searchParams = Object.keys(req.query).filter(param => req.query[param].trim() !== '');
+    const searchParams = Object.entries(req.query).filter(([key, value]) => value.trim() !== '');
 
-    log('searchParams', searchParams)
 
-    const searchResult = []
+    //факт найденного пользователя определяется так: значение каждого параметра (req.query.param), заполенного в форме поиска, должно равняться значению аналогичного параметра у юзера. Только если это выполняется для каждого параметра = юзер найден
+    const result = users.filter(user => searchParams.every(([key, value]) => user[key] === value));
 
-    users.forEach(user => {
-        const userFound = searchParams.every(param => user[param] === (req.query[param]));
-        log(userFound);
-        if (userFound) {
-            searchResult.push(user);
-        }
-        log('Найденные пользователи', searchResult);
+
+    res.render('index', { 
+        users, 
+        formSchema: userFormSchema,
+        result: result.length > 0 ? result : 'Пользователи не найдены', 
     });
-
-    res.render('index', { users, searchResult, formSchema });
-
-
-
-    /*
-    1. Взять все параметры из req.query - это заполненные поля в форме поиска
-    2.
-    */
-
-    // log(searchResult);
 };

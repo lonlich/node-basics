@@ -1,7 +1,8 @@
+<a href="/">Главная</a>
+
 <h2>Список пользователей:</h2>
 
 <ul>
-
     <% users.forEach((user, i)=> {%>
         <li>
             <p>
@@ -18,7 +19,6 @@
         <a href="/<%= user.id %>/edit">Редактировать</a>
         <a href="/<%= user.id %>/delete">Удалить</a>
         <% }) %>
-
 </ul>
 
 <a href="/create-user">Создать пользователя</a>
@@ -31,3 +31,7 @@
     <input type="text" id="email" name="email" value="navi-lonely@mail.ru"/>
     <button type="submit">Найти</button>
 </form>
+
+<% if (typeof result !== 'undefined') { %>
+    <pre><%= JSON.stringify(result, null, 2) %></pre>
+<% } %>
