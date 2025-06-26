@@ -1,0 +1,40 @@
+<a href="/">Главная</a>
+
+<h2>Список пользователей:</h2>
+
+<ul>
+    <% users.forEach((user, i)=> {%>
+        <li>
+            <p>
+                <%= ++i %> пользователь:
+            </p>
+            <% Object.keys(formSchema).forEach(key => {%>
+                <p>
+                    <% if (user[key]) { %>
+                        <%= formSchema[key].label %>: <%= user[key] %>
+                    <% } %>
+                </p>
+                <%}); %>
+        </li>
+        <a href="/<%= user.id %>/edit">Редактировать</a>
+        <a href="/<%= user.id %>/delete">Удалить</a>
+        <% }) %>
+</ul>
+
+<a href="/create-user">Создать пользователя</a>
+
+<h4>Поиск</h4>
+<form action="/search" method="get">
+    <label for="firstname">Имя</label>
+    <input type="text" id="firstname" name="firstname" value="MIKHAIL"/>
+    <label for="email">Почта</label>
+    <input type="text" id="email" name="email" value="navi-lonely@mail.ru"/>
+    <button type="submit">Найти</button>
+</form>
+
+<% if (typeof result !== 'undefined') { %>
+    <pre><%= JSON.stringify(result, null, 2) %></pre>
+<% } %>
+
+
+

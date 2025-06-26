@@ -1,0 +1,24 @@
+<%  
+    const {
+        endpoint = '',
+        errorsMap = {},
+        user = {},
+        formSchema = {},
+    } = formData || {};
+%>
+<form action="<%= endpoint %>" method="post">
+    <% Object.keys(formSchema).forEach((field) => { %>
+        <label for="<%= field %>"><%= formSchema[field].label %></label>
+        <input 
+            value="<%= user[field] %>" 
+            type="<%= formSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+        />
+        <% if (errorsMap[field]?.path === field) { 
+            console.log('Есть ошибка!');%>
+            <p><%= errorsMap[field].msg %></p>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
