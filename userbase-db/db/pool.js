@@ -6,7 +6,7 @@ import { Pool } from "pg";
 // We're hardcoding them here for simplicity
 const pool = new Pool({
     connectionString:
-        "postgresql://postgres:pedya@localhost:5433/users",
+        "postgresql://postgres:pedya@85.209.132.162:5433/postgres"
 });
 
 export default pool;

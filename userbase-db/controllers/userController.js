@@ -3,7 +3,7 @@ const app = express();
 import { userbase } from "../storage/userbase.js";
 import { body, validationResult } from "express-validator";
 import { userFormSchema } from "../constants/userFormSchema.js";
-import { getAllUsernames, insertUsername } from "../db/queries.js";
+import { getAllUsernames, insertUser } from "../db/queries.js";
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,8 +36,8 @@ export async function createUserPost(req, res) {
             }
         })
     }
-
-    await insertUsername(user.firstname);
+    log(user);
+    await insertUser(user);
 
     res.redirect('/');
 }

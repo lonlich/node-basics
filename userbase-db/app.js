@@ -27,15 +27,11 @@ import axios, { Axios } from "axios";
 import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
-// import { userCreationControllerGet } from "./controllers/userCreationControllerGet.js";
-// import { userCreationControllerPost } from "./controllers/userCreationControllerPost.js";
-// import { userEditControllerGet } from "./controllers/userEditControllerGet.js";
-// import { userEditControllerPost } from "./controllers/userEditControllerPost.js";
-// import { userDeletionControllerGet } from "./controllers/userDeletionControllerGet.js";
+
 
 //controllers
 import { createUserGet, createUserPost, editUserGet, editUserPost, deleteUserGet } from "./controllers/userController.js";
-import { searchController } from "./controllers/searchController.js";
+import { searchControllerGet } from "./controllers/searchController.js";
 
 import { userbase } from "./storage/userbase.js";
 import { userFormSchema } from "./constants/userFormSchema.js";
@@ -96,7 +92,7 @@ app.post("/:id/edit", validateUpdatedUser, editUserPost);
 app.get('/:id/delete', deleteUserGet)
 
 //search user
-app.get('/search', searchController);
+app.get('/search', searchControllerGet);
 
 
 

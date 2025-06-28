@@ -32,8 +32,8 @@
     <button type="submit">Найти</button>
 </form>
 
-<% if (typeof result !== 'undefined') { %>
-    <pre><%= JSON.stringify(result, null, 2) %></pre>
+<% if (typeof searchQueryResponse !== 'undefined') { %>
+    <pre><%= JSON.stringify(searchQueryResponse, null, 2) %></pre>
 <% } %>
 
 

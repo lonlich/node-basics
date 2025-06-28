@@ -2,25 +2,36 @@ import express from "express";
 const app = express();
 import { userbase } from "../storage/userbase.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
+import pool from "../db/pool.js";
+import { getAllUsernames, insertUser } from "../db/queries.js";
+
 
 //GET
-export const searchController = (req, res) => {
-    
-    //получаем массив всех юзеров из базы
-    const users = userbase.getUsers();
+export const searchControllerGet = async(req, res) => {
 
     //определяем, какие поля были заполнены в форме поиска
-    // const searchParams = Object.keys(req.query).filter(param => req.query[param].trim() !== '');
     const searchParams = Object.entries(req.query).filter(([key, value]) => value.trim() !== '');
 
+    /* pool.query('SELECT * FROM usernames 
+        WHERE param_name ILIKE '%$1%', values)
+    */
 
-    //факт найденного пользователя определяется так: значение каждого параметра (req.query.param), заполенного в форме поиска, должно равняться значению аналогичного параметра у юзера. Только если это выполняется для каждого параметра = юзер найден
-    const result = users.filter(user => searchParams.every(([key, value]) => user[key] === value));
+    let searchQuery = `SELECT * FROM usernames`;
+    const conditions = [];
+    const values = [];
 
+    searchParams.forEach(([key, val], i) => {
+        conditions.push(`${key} ILIKE $${i + 1}`);
+        values.push(`%${val}%`);
+    });
+
+    searchQuery += ` WHERE ` + conditions.join(' AND ');
+    const searchQueryResponse = await pool.query(searchQuery, values);
+    log('searchQueryResponse', searchQueryResponse.rows)
 
     res.render('index', { 
-        users, 
+        users: await getAllUsernames(), 
         formSchema: userFormSchema,
-        result: result.length > 0 ? result : 'Пользователи не найдены', 
+        searchQueryResponse: searchQueryResponse.rows.length > 0 ? searchQueryResponse.rows : 'Пользователи не найдены', 
     });
 };
