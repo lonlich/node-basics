@@ -2,13 +2,13 @@ import express from "express";
 const app = express();
 import { userFormSchema } from "../constants/userFormSchema.js";
 import { userbase } from "../storage/userbase.js";
-import { getAllUsernames, insertUser } from "../db/queries.js";
+import { getAllUsers, insertUser } from "../db/queries.js";
 
 //GET
 export const indexGet = async (req, res) => {
-    log(await getAllUsernames());
+    // log(await getAllUsers());
     res.render("index", {
-        users: await getAllUsernames(),
+        users: await getAllUsers(),
         formSchema: userFormSchema,
     });
 };

@@ -3,7 +3,9 @@ const app = express();
 import { userbase } from "../storage/userbase.js";
 import { body, validationResult } from "express-validator";
 import { userFormSchema } from "../constants/userFormSchema.js";
-import { getAllUsernames, insertUser } from "../db/queries.js";
+import { getAllUsers, insertUser } from "../db/queries.js";
+import pool from "../db/pool.js";
+
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,7 +38,6 @@ export async function createUserPost(req, res) {
             }
         })
     }
-    log(user);
     await insertUser(user);
 
     res.redirect('/');
@@ -45,15 +46,27 @@ export async function createUserPost(req, res) {
 //EDIT USER
 
 //GET
-export const editUserGet = (req, res) => {
-    const user = userbase.findUser(req.params.id);
+export const editUserGet = async (req, res) => {
+
+    const userId = Number(req.params.id);
+
+    if (isNaN(userId)) {
+        log('Некорректный ID');
+        res.status(404).send('Некорректный ID');
+        return;
+    }
+    const queryResponse = await pool.query(`
+        SELECT * FROM usernames
+        WHERE id = $1
+        `, [userId]);
+    
+    const user = queryResponse.rows[0];
 
     if (!user) {
         console.log("Пользователь не найден!");
+        res.status(404).send('Пользователь не найден!');
         return;
     }
-
-    // const inputValues = Object.keys(userFormSchema).map(key => user[key]);
 
     res.render("edit-user", {
         heading: `Редактирование пользователя ${user.firstname}`,
@@ -66,10 +79,11 @@ export const editUserGet = (req, res) => {
 };
 
 //POST
-export const editUserPost = (req, res) => {
+export const editUserPost = async (req, res) => {
+    
     const errors = validationResult(req);
     const user = req.body;
-    console.log('req.params:', req.params.id);
+    const userId = Number(req.params.id);
 
     if (!errors.isEmpty()) {
         return res.render('edit-user', {
@@ -82,13 +96,27 @@ export const editUserPost = (req, res) => {
             }
         })
     }
+    /* UPDATE table_name
+        SET column1 = value1, column2 = value2
+        WHERE condition; */ 
+    
+    const updateParams = Object.entries(req.body).filter(([key, value]) => value.trim() !== '');;
 
-    userbase.updateUser({
-        props: {
-            id: req.params.id,
-            formData: req.body
-        },
+    let updateQuery = `UPDATE usernames SET`;
+    const columns = [];
+    const values = [];
+
+    updateParams.forEach(([param, value], i) => {
+        columns.push(`${param} = $${i + 1}`);
+        values.push(value);
     });
+
+    updateQuery += ` ` + columns.join(', ') + ` WHERE id = ${userId}`;
+
+    await pool.query(updateQuery, values);
+    log(await getAllUsers());
+    log('hello');
+    
     res.redirect("/");
 };
 
@@ -96,7 +124,10 @@ export const editUserPost = (req, res) => {
 //DELETE USER
 
 //GET
-export const deleteUserGet = (req, res) => {
-    userbase.deleteUser(+req.params.id);
+export const deleteUserGet = async (req, res) => {
+    const userId = Number(req.params.id);    
+    const deleteQuery = `DELETE FROM usernames
+        WHERE id = $1;`
+    await pool.query(deleteQuery, [userId]);
     res.redirect('/');
 }

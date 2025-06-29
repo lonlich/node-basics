@@ -2,8 +2,11 @@ import pool from "./pool.js";
 import { normalizeUser } from "./normalizeUser.js";
 
 //get all usernames
-export const getAllUsernames = async () => {
-    const { rows } = await pool.query('SELECT * FROM usernames');
+export const getAllUsers = async () => {
+    const { rows } = await pool.query(`
+        SELECT * FROM usernames
+        ORDER BY id ASC
+        `);
     return rows;
 }
 
