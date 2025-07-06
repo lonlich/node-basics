@@ -8,7 +8,7 @@ import {
     //formatPrice,
 } from "./js/utils.js";
 
-import './js/globals.js'
+import "./js/globals.js";
 
 import {
     __filename,
@@ -28,9 +28,14 @@ import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
 
-
 //controllers
-import { createUserGet, createUserPost, editUserGet, editUserPost, deleteUserGet } from "./controllers/userController.js";
+import {
+    createUserGet,
+    createUserPost,
+    editUserGet,
+    editUserPost,
+    deleteUserGet,
+} from "./controllers/userController.js";
 import { searchControllerGet } from "./controllers/searchController.js";
 
 import { userbase } from "./storage/userbase.js";
@@ -54,6 +59,9 @@ import { fileURLToPath } from "url";
 //routers
 import { indexRouter } from "./routers/index-router.js";
 import { indexGet } from "./controllers/indexController.js";
+import { gamesRouter } from "./routers/games-router.js";
+import { selectRows } from "./db/queries.js";
+import { gameCardSchema } from "./constants/gameFormSchema.js";
 
 const app = express();
 
@@ -74,9 +82,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(setupLocals);
 
 //serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 /* MAIN */
+
+//USERBASE
 
 app.get("/", indexGet);
 
@@ -89,13 +99,23 @@ app.get("/:id/edit", editUserGet);
 app.post("/:id/edit", validateUpdatedUser, editUserPost);
 
 //delete user
-app.get('/:id/delete', deleteUserGet)
+app.get("/:id/delete", deleteUserGet);
 
 //search user
-app.get('/search', searchControllerGet);
+app.get("/search", searchControllerGet);
 
+//GAMEBASE
 
+app.use("/games", gamesRouter);
 
+//обработчик ошибок
+app.use((err, req, res, next) => {
+    console.error(err.stack); // лог в консоль
+
+    res.status(500).render("error", {
+        error: err,
+    });
+});
 
 //запуск сервера
 app.listen(PORT, () => {
@@ -103,3 +123,7 @@ app.listen(PORT, () => {
 });
 
 //TODO: проверить маршруты на соответствие REST-архитектуре
+
+//TODO: добавить sanitizing для полей игры, которые вводятся пользователем
+
+//TODO: переделать ID с цифр на говорящие. Хотя бы для жанров?

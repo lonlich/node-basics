@@ -1,3 +1,4 @@
+import { gameCardSchema } from "../constants/gameFormSchema.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
 
 export function setupLocals(req, res, next) {
@@ -18,6 +19,7 @@ export function setupLocals(req, res, next) {
 
     //user-form
     res.locals.userFormSchema = userFormSchema;
+    res.locals.gameFieldSchema = gameCardSchema;
 
     next();
 }

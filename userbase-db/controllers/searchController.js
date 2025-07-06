@@ -3,7 +3,7 @@ const app = express();
 import { userbase } from "../storage/userbase.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
 import pool from "../db/pool.js";
-import { getAllUsers, insertUser } from "../db/queries.js";
+import { selectRows, insertUser } from "../db/queries.js";
 
 
 //GET
@@ -30,7 +30,7 @@ export const searchControllerGet = async(req, res) => {
         const searchQueryResponse = await pool.query(searchQuery, values);
     
         res.render('index', { 
-            users: await getAllUsers(), 
+            users: await selectRows('usernames'), 
             formSchema: userFormSchema,
             searchQueryResponse: searchQueryResponse.rows.length > 0 ? searchQueryResponse.rows : 'Пользователи не найдены', 
         });

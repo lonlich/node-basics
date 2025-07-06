@@ -2,8 +2,9 @@ import express from "express";
 const app = express();
 import { userbase } from "../storage/userbase.js";
 import { body, validationResult } from "express-validator";
+import { gameCardSchema } from "../constants/gameFormSchema.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
-import { getAllUsers, insertUser } from "../db/queries.js";
+import { selectRows, insertUser } from "../db/queries.js";
 import pool from "../db/pool.js";
 
 
@@ -114,7 +115,7 @@ export const editUserPost = async (req, res) => {
     updateQuery += ` ` + columns.join(', ') + ` WHERE id = ${userId}`;
 
     await pool.query(updateQuery, values);
-    log(await getAllUsers());
+    log(await selectRows('usernames'));
     log('hello');
     
     res.redirect("/");

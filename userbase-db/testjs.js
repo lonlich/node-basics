@@ -1,0 +1,141 @@
+import {
+    log,
+    warn,
+    table,
+    block,
+    fakeApiCall,
+    now,
+    //formatPrice,
+} from "./js/utils.js";
+
+import "./js/globals.js";
+
+import {
+    __filename,
+    __dirname,
+    PORT,
+    STATIC_FOLDER_PATH,
+    PAGE404_FILE,
+} from "./config.js";
+
+import express from "express";
+import expressLayouts from "express-ejs-layouts";
+import { body, validationResult } from "express-validator";
+import axios, { Axios } from "axios";
+import pool from "./db/pool.js";
+
+// import { serveHTML } from "./serveHTML.js";
+import { setupLocals } from "./middleware/setupLocals.js";
+import { validateUser } from "./validators/validateUser.js";
+import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
+import { addItem } from "./db/queries.js";
+
+//controllers
+import {
+    createUserGet,
+    createUserPost,
+    editUserGet,
+    editUserPost,
+    deleteUserGet,
+} from "./controllers/userController.js";
+import { searchControllerGet } from "./controllers/searchController.js";
+
+import { userbase } from "./storage/userbase.js";
+import { userFormSchema } from "./constants/userFormSchema.js";
+
+import fs from "fs";
+import { access } from "fs/promises";
+import { constants } from "fs";
+import { readFile } from "fs/promises";
+import http from "node:http";
+import url from "node:url";
+import path from "path";
+import EventEmitter from "node:events";
+const eventEmitter = new EventEmitter();
+import { upperCase } from "upper-case";
+import formidable from "formidable";
+
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+//routers
+import { indexRouter } from "./routers/index-router.js";
+import { indexGet } from "./controllers/indexController.js";
+import { gamesRouter } from "./routers/games-router.js";
+import { selectRows } from "./db/queries.js";
+import { gameCardSchema } from "./constants/gameFormSchema.js";
+
+const app = express();
+
+const selectQueryParams = {
+    table: "genres",
+    columns: ["id"],
+    where: {
+        name: { op: "IN", value: ["rpg", "rts"] }, // value: ['rpg', 'rts']
+        // price: { op: '=', value: 69 },
+        // title: { op: 'IN', value: ['rpg', 'rts'] },
+    },
+    orderBy: "id ASC",
+};
+
+//SELECT
+const testSQLSelect = async ({ table, columns, where, orderBy }) => {
+    //составляем строку с колонками. Поддерживается columns в виде массива или строки
+    const columnsString = Array.isArray(columns) ? columns.join(", ") : columns;
+
+    //составляем строку с условиями (если они переданы)
+    let whereClause = "";
+    const values = [];
+
+    if (where) {
+        const conditions = [];
+        let i = 1;
+
+        Object.entries(where).forEach(([column, { op, value }]) => {
+            if (op === "IN") {
+                const placeholders = value.map(() => `$${i++}`);
+                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
+                values.push(...value);
+            } else {
+                conditions.push(`${column} ${op} $${i++}`);
+                values.push(value);
+            }
+        });
+
+        whereClause = `WHERE ${conditions.join(" AND ")}`;
+    }
+    const query = `SELECT ${columnsString} FROM ${table} ${whereClause} ORDER BY ${orderBy}`;
+    const result = (await pool.query(query, values)).rows;
+    return result;
+};
+
+const selectedGenres = await testSQLSelect(selectQueryParams);
+console.log("🚀 ~ selectedGenres:", selectedGenres)
+
+//ADD ROWS
+const addQueryParams = {
+    table: "games_genres",
+    columns: ["game_id", "genre_id"],
+    values: [
+        { game_id: 1, genre_id: 2 },
+        { game_id: 1, genre_id: 3 },
+    ],
+};
+addItem("games_genres", "game_id, genre_id", ["1", selectedGenres]);
+
+
+// a) SELECT id FROM genres
+// WHERE
+// name IN ('$1', '$2') - condition1 - $column $op ($placeholders.join(', '))
+// AND id LIKE '%123%' - condition2
+// AND price = 50 - condition3
+// ORDER BY id ASC
+
+/*  genre_id's: [ { id: 2 }, { id: 3 } ]
+    game_id: 1
+
+b) INSERT INTO games_genres (game_id, genre_id)
+    VALUES 
+    ($1, $2), 
+    ($3, $4)
+*/

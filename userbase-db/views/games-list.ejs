@@ -1,33 +1,29 @@
-<a href="/">Главная</a>
-</br>
-<a href="/games">Игры</a>
+<a href="/">На главную</a>
 
-
-<h2>Список пользователей:</h2>
+<h2>Список игр:</h2>
 
 <ul>
-    <% users.forEach(user => {%>
+    <% games.forEach(game => {%>
         <li>
             <p>
-                ID: <%= user.id %>
+                ID: <%= game.id %>
             </p>
             <% Object.keys(formSchema).forEach(key => {%>
                 <p>
-                    <% if (!user[key]) { user[key] = 'Не заполнено'}%>
-                        <%= formSchema[key].label %>: <%= user[key] %>
+                        <%= formSchema[key].label %>: <%- game[key] %>
                     <%  %>
                 </p>
                 <%}); %>
         </li>
-        <a href="/<%= user.id %>/edit">Редактировать</a>
-        <a href="/<%= user.id %>/delete">Удалить</a>
+        <a href="/games/<%= game.id %>/edit">Редактировать</a>
+        <a href="/games/<%= game.id %>/delete">Удалить</a>
         <% }) %>
 </ul>
 
-<a href="/create-user">Создать пользователя</a>
+<a href="/games/add-game">Добавить игру</a>
 
 <h4>Поиск</h4>
-<form action="/search" method="get">
+<form action="/games/search-game" method="get">
     <label for="firstname">Имя</label>
     <input type="text" id="firstname" name="firstname" value="MIKHAIL"/>
     <label for="email">Почта</label>
@@ -38,6 +34,3 @@
 <% if (typeof searchQueryResponse !== 'undefined') { %>
     <pre><%= JSON.stringify(searchQueryResponse, null, 2) %></pre>
 <% } %>
-
-
-

@@ -1,0 +1,42 @@
+<%  
+    const {
+        endpoint = '',
+        errorsMap = {},
+        game = {},
+        formSchema = {},
+    } = formData || {};
+%>
+<form action="/games/<%= endpoint %>" method="post">
+    <% Object.keys(formSchema).forEach((field) => { 
+        if (formSchema[field].visibleInForm === false) return; 
+        
+        if (formSchema[field].isMultiple) { %>
+            <legend><%= formSchema[field].label %>:</legend>
+            <% for (const option in formSchema[field].options) { %>
+                <fieldset>
+                    <label><input 
+                        type="<%= formSchema[field].type %>" 
+                        name="<%= field %>" 
+                        value="<%= option %>">
+                        <%= formSchema[field].options[option].label %></label>
+                </fieldset>
+            <% }
+        } %>
+        
+        
+        <label for="<%= field %>"><%= formSchema[field].label %></label>
+        </br>
+        <input 
+            value="<%= game[field] %>" 
+            type="<%= formSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+        />
+    </br>
+        <% if (errorsMap[field]?.path === field) { 
+            console.log('Есть ошибка!');%>
+            <p><%= errorsMap[field].msg %></p>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
