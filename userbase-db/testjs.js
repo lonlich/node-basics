@@ -28,7 +28,7 @@ import pool from "./db/pool.js";
 import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
-import { addItem } from "./db/queries.js";
+import { addItem, selectFromTable } from "./db/queries.js";
 
 //controllers
 import {
@@ -62,7 +62,6 @@ import { fileURLToPath } from "url";
 import { indexRouter } from "./routers/index-router.js";
 import { indexGet } from "./controllers/indexController.js";
 import { gamesRouter } from "./routers/games-router.js";
-import { selectRows } from "./db/queries.js";
 import { gameCardSchema } from "./constants/gameFormSchema.js";
 
 const app = express();
@@ -109,19 +108,11 @@ const testSQLSelect = async ({ table, columns, where, orderBy }) => {
     return result;
 };
 
-const selectedGenres = await testSQLSelect(selectQueryParams);
-console.log("🚀 ~ selectedGenres:", selectedGenres)
+// const selectedGenres = await selectFromTable(selectQueryParams);
+// console.log("🚀 ~ selectedGenres:", selectedGenres)
 
-//ADD ROWS
-const addQueryParams = {
-    table: "games_genres",
-    columns: ["game_id", "genre_id"],
-    values: [
-        { game_id: 1, genre_id: 2 },
-        { game_id: 1, genre_id: 3 },
-    ],
-};
-addItem("games_genres", "game_id, genre_id", ["1", selectedGenres]);
+
+//addItem("games_genres", "game_id, genre_id", ["1", selectedGenres]);
 
 
 // a) SELECT id FROM genres
@@ -134,8 +125,80 @@ addItem("games_genres", "game_id, genre_id", ["1", selectedGenres]);
 /*  genre_id's: [ { id: 2 }, { id: 3 } ]
     game_id: 1
 
-b) INSERT INTO games_genres (game_id, genre_id)
-    VALUES 
-    ($1, $2), 
-    ($3, $4)
+    genreIds: [ { id: 1 }, { id: 2 }, { id: 3 } ]
+    
+    values: [ [ 126, 1 ], [ 126, 2 ] ]
 */
+
+export const addToTable = async ({ table, columns, rowData }) => {
+    try {
+        console.log("🚀 rowData:", rowData);
+        //если в rowData передали передали просто массив значений (для одной строки), оборачиваем его во внешний массив для соответствия формату
+        if(!Array.isArray(rowData[0])) {
+            rowData = [rowData];
+        }
+        
+        if (!table || !columns || !rowData) {
+            warn(
+                "Не указаны имя целевой таблицы или колонки или rowData для вставки"
+            );
+            
+            return;
+        }
+        //составляем строку с колонками. Поддерживается columns в виде массива или строки
+        const columnsString = Array.isArray(columns) ? columns.join(', ') : columns;
+        // console.log("🚀 ~ addToTable ~ columnsString:", columnsString)
+
+        let valuePlaceholders = '';
+        const valuePlaceholdersArr = [];
+        const valueParamsArr = [];
+        let i = 1;
+
+        rowData.forEach(row => {
+            valueParamsArr.push(...row);
+            valuePlaceholdersArr.push(`(${row.map(() => `$${i++}`)})`)
+        });
+
+        valuePlaceholders = valuePlaceholdersArr.join(', ');
+
+        // console.log("🚀 ~ addToTable ~ valuePlaceholders:", valuePlaceholders)
+        
+        const addQuery = `INSERT INTO ${table} (${columnsString}) VALUES ${valuePlaceholders} RETURNING *`;
+
+        const addedData = (await pool.query(addQuery, valueParamsArr));
+        console.log("!!! SUCCESS !!!");
+        // console.log("🚀 ~ addToTable ~ addedData.rows[0]:", addedData.rows)
+        return addedData.rows;
+
+    } catch (error) {
+        warn(error);
+    }
+};
+
+//кастомная версия addToTable для добавления одной строки. Значения в виде [массив значений строки] оборачиваются в еще один массив (для соответствия формату значения addToTable - массив массивов значений) и вызывают addToTable
+export const addRowToTable = (addQueryParams) => {
+    return addToTable({
+        ...addQueryParams,
+        rowData: [addQueryParams.rowData]
+    });
+}
+
+const addQueryParamsGamesGenres = {
+    table: "games_genres",
+    columns: ["game_id", "genre_id"],
+    rowData: [
+        ['1', '2'],
+        ['1', '3']
+    ],
+};
+
+const addQueryParamsGames = {
+    table: "games",
+    columns: ["name", "description", "price"],
+    rowData: [
+        ['escapefromtarkov', 'awesome description', 30],
+        ['fortnite', 'another awesome description description', 30]
+    ],
+};
+
+addToTable(addQueryParamsGamesGenres); 

@@ -4,7 +4,7 @@ import { userbase } from "../storage/userbase.js";
 import { body, validationResult } from "express-validator";
 import { gameCardSchema } from "../constants/gameFormSchema.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
-import { selectRows, insertUser } from "../db/queries.js";
+import { insertUser, selectFromTable } from "../db/queries.js";
 import pool from "../db/pool.js";
 
 
@@ -115,7 +115,7 @@ export const editUserPost = async (req, res) => {
     updateQuery += ` ` + columns.join(', ') + ` WHERE id = ${userId}`;
 
     await pool.query(updateQuery, values);
-    log(await selectRows('usernames'));
+    log(await selectFromTable({ table: 'usernames' }));
     log('hello');
     
     res.redirect("/");

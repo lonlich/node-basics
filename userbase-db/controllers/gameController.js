@@ -2,9 +2,11 @@ import express from "express";
 const app = express();
 import { body, validationResult } from "express-validator";
 import { gameCardSchema, genreSchema } from "../constants/gameFormSchema.js";
-import { selectRows, insertUser, addItem } from "../db/queries.js";
+import { insertUser, addItem, selectFromTable } from "../db/queries.js";
 import pool from "../db/pool.js";
 import { tableMap } from "../db/tableMap.js";
+import { addToTable } from "../testjs.js";
+import { addRowToTable } from "../testjs.js";
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -64,24 +66,97 @@ export async function addGamePost(req, res) {
             }
         });
     
-        // console.log("🚀 ~ addGamePost ~ gamesTableData:", gamesTableData);
-        // console.log(`\n🚀 ~ gamesTableData:\n${JSON.stringify(gamesTableData, null, 2)}\n`);
+
+        // console.log("🚀 ~ addGamePost ~ gamesTableData:", gamesTableData)
+
         const gamesTableColumns = Object.keys(gamesTableData).join(', ');
-        // console.log("🚀 ~ addGamePost ~ gamesTableColumns:", gamesTableColumns)
-        await addItem('games', gamesTableColumns, gamesTableData);
+        const gamesTableRowData = Object.values(gamesTableData);
+        const addedGameTableData = await addToTable({
+            table: 'games',
+            columns: gamesTableColumns,
+            rowData: gamesTableRowData
+        });
+
+        console.log("🚀 ~ addGamePost ~ addedGameTableData:", addedGameTableData);
         
     
         /*
         2. Добавление данных о жанрах игры в связанную таблицу games_genres. Для этого нужно :
         - получить ID игры из таблицы games (добавлено выше) - это будет game_id в таблице games_genres
-        - получить ID жанров (по значениям из formInputData.genres) из таблицы genre - это будут genres_id в таблице games_genres
-        - добавить строки с жанрами в таблицу games_genres с полученными ID игры и жанров
         */
+        const gameId = addedGameTableData[0].id;
+            // console.log("🚀 ~ gameId:", gameId)
+
+        
+        /*
+        - получить ID жанров (по значениям из formInputData.genres) из таблицы genre - это будут genres_id в таблице games_genres
+        */
+        // log('formInputData.genre', formInputData.genre)
+
+        if (formInputData.genre) {
+            const genreIds = await selectFromTable({
+                table: 'genres',
+                columns: 'id',
+                where: { name: { op: 'IN', value: formInputData?.genre } }
+            })
+            // console.log("🚀 ~ addGamePost ~ genreIds:", genreIds)
+    
+            //- добавить строки с жанрами в таблицу games_genres с полученными ID игры и жанров
+            const game_idColumnType  = tableMap.games_genres.find(column => column.columnName === 'game_id').type;
+            const gameIdNormalized = normalizeByColumnType(gameId, game_idColumnType)
+            // console.log("🚀 ~ addGamePost ~ gameIdNormalized:", gameIdNormalized)
+            
+            const genreIdsNormalized = [];
+            const genre_idColumnType  = tableMap.games_genres.find(column => column.columnName === 'genre_id').type;
+
+            genreIds.forEach(({id}) => {
+                genreIdsNormalized.push(normalizeByColumnType(id, genre_idColumnType));
+            })
+            // console.log("🚀 ~ genreIds.forEach ~ genreIdsNormalized:", genreIdsNormalized)
+            
+            const games_genresTableRowData = [];
+
+            genreIds.forEach(({ id }) => {
+                games_genresTableRowData.push([gameId, id]);
+            });
+            
+            // console.log("🚀 ~ addGamePost ~ values:", games_genresTableRowData)
+
+            const games_genresAddedTableData = await addToTable({
+                table: 'games_genres',
+                columns: 'game_id, genre_id',
+                rowData: games_genresTableRowData
+            })
+            console.log("🚀 ~ addGamePost ~ games_genresAddedTableData:", games_genresAddedTableData)
+
+            // await addToTable({
+            //     table: 'games',
+            //     columns: 'name, price',
+            //     rowData: ['Chupakabra', 25]
+            // })
+        } else {
+            log('Жанр не указан!');
+        }
+        
         res.redirect('/games');
     } catch (error) {
         warn(error);
     }
 }
+
+
+// INSERT INTO games_genres (game_id, genre_id)
+//     VALUES 
+//     ($1, $2), 
+//     ($3, $4)`, ['1', '2', '1', '3']
+
+// addedGameTableData: [  {
+//     id: 25,
+//     name: 'прпар',
+//     description: 'арапр',
+//     price: '22.00',
+//     created_at: '15:34:01.18+00'        
+//   }
 
 /* 
 1.Добавить жанры к игре
@@ -193,9 +268,9 @@ WHERE name =/LIKE/> $1
 
 /* UTILS */
 function normalizeByColumnType(value, type) {
-    if (type === "numeric" || type === "int") {
+    if (type === "numeric" || type === "integer") {
         if (value === "") return null;
-        //если пустая строка, в numeric колонку записываем null
+        //если пустая строка, в numeric/integer колонку записываем null
         const num = Number(value);
         //валидация на переданное число
         return isNaN(num) ? null : num;

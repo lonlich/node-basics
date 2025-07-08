@@ -5,7 +5,10 @@ export const tableMap = {
         { columnName: "description", type: "text" },
         { columnName: "price", type: "numeric" },
     ],
-    games_genres: ["game_id", "genre_id"],
+    games_genres: [
+        { columnName: "game_id", type: "integer" },
+        { columnName: "genre_id", type: "integer" }
+    ],
 };
 
 // formData: {

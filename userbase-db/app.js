@@ -60,7 +60,7 @@ import { fileURLToPath } from "url";
 import { indexRouter } from "./routers/index-router.js";
 import { indexGet } from "./controllers/indexController.js";
 import { gamesRouter } from "./routers/games-router.js";
-import { selectRows } from "./db/queries.js";
+import { selectFromTable } from "./db/queries.js";
 import { gameCardSchema } from "./constants/gameFormSchema.js";
 
 const app = express();

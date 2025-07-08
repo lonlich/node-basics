@@ -2,14 +2,14 @@ import express from "express";
 const app = express();
 import { userFormSchema } from "../constants/userFormSchema.js";
 import { userbase } from "../storage/userbase.js";
-import { selectRows, insertUser } from "../db/queries.js";
+import { selectFromTable, insertUser } from "../db/queries.js";
 
 //GET
 export const indexGet = async (req, res) => {
     // log(await selectAllRows('usernames'));
     log('В index.get')
     res.render("index", {
-        users: await selectRows('usernames'),
+        users: await selectFromTable({ table: 'usernames' }),
         formSchema: userFormSchema,
     });
 };

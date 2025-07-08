@@ -26,7 +26,7 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 
 import express from "express";
-import { selectRows } from "../db/queries.js";
+import { selectFromTable } from "../db/queries.js";
 import { gameCardSchema as gameCardSchema } from "../constants/gameFormSchema.js";
 import { genreSchema } from "../constants/gameFormSchema.js";
 import { gameSchema } from "../constants/gameFormSchema.js";
@@ -49,7 +49,7 @@ gamesRouter.get("/", async (req, res) => {
         */
 
         //запрос в основную таблицу games для получения базовой инфы
-        const games = await selectRows("games");
+        const games = await selectFromTable({ table: 'games' });
 
         //получаем список жанров для каждой игры с помощью связующей таблицы games_genres. Вместо forEach используем for...of, так как forEach не дожидается завершения await-функций
         for (const game of games) {
