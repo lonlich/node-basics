@@ -30,8 +30,8 @@ import { selectFromTable } from "../db/queries.js";
 import { gameCardSchema as gameCardSchema } from "../constants/gameFormSchema.js";
 import { genreSchema } from "../constants/gameFormSchema.js";
 import { gameSchema } from "../constants/gameFormSchema.js";
-import { validateAddedGame } from "../validators/validateGame.js";
-import { addGameGet, addGamePost } from "../controllers/gameController.js";
+import { validateAddedGame } from "../validators/validateAddedGame.js";
+import { addGameGet, addGamePost, editGameGet, editGamePost } from "../controllers/gameController.js";
 
 const app = express();
 
@@ -63,7 +63,7 @@ gamesRouter.get("/", async (req, res) => {
                 `);
             //записываем жанры в поле game.genre
             game.genre =
-                genre.rows.length === 0 ? "Не указан в БД" : genre.rows;
+            genre.rows.length === 0 ? "Не указан в БД" : genre.rows;
         }
 
         //у игры могут быть поля разных типов. Поля простых типов (строки, числа) -  передаются в шаблон напрямую, а поля с множественными значениями - массивы - нужно обработать отдельно и выдать готовый код для отрисовки. Также если поле не заполнено, надо вывести соответствующее сообщение
@@ -158,12 +158,12 @@ gamesRouter.get("/add-game", addGameGet);
 
 gamesRouter.post("/add-game", validateAddedGame, addGamePost);
 
-//edit user
-// app.get("/:id/edit", editUserGet);
-// app.post("/:id/edit", validateUpdatedUser, editUserPost);
+//edit game
+gamesRouter.get("/:id/edit", editGameGet);
+gamesRouter.post("/:id/edit", validateAddedGame, editGamePost);
 
-// //delete user
-// app.get("/:id/delete", deleteUserGet);
+//delete game
+// gamesRouter.get("/:id/delete", deleteGameGet);
 
 // //search user
-// app.get("/search", searchControllerGet);
+// gamesRouter.get("/search", searchControllerGet);

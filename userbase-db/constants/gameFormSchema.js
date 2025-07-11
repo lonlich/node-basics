@@ -21,3 +21,7 @@ export const gameCardSchema = {
     created_at: { label: "Добавлено", type: "text", visibleInForm: false },
     genre: { label: "Жанр", type: "checkbox", isMultiple: true, options: genreSchema },
 };
+
+/*
+[ { game_id: 1, genre_id: 2 }, { game_id: 1, genre_id: 3 } ]   
+*/

@@ -2,17 +2,15 @@ import express from "express";
 const app = express();
 import { body, validationResult } from "express-validator";
 import { gameCardSchema, genreSchema } from "../constants/gameFormSchema.js";
-import { insertUser, addItem, selectFromTable } from "../db/queries.js";
+import { addRowToTable, addToTable, deleteFromTable, selectFromTable } from "../db/queries.js";
 import pool from "../db/pool.js";
 import { tableMap } from "../db/tableMap.js";
-import { addToTable } from "../testjs.js";
-import { addRowToTable } from "../testjs.js";
+import { updateInTable } from "../testjs.js";
 
 
 app.use(express.urlencoded({ extended: true }));
 
 //ADD GAME
-
 //GET
 export const addGameGet = (req, res) => {
     res.render("add-game", {
@@ -31,9 +29,9 @@ export const addGameGet = (req, res) => {
 */
 //POST
 export async function addGamePost(req, res) {
-
     try {
         const errors = validationResult(req);
+        console.log("🚀 ~ addGamePost ~ errors:", errors)
         const formInputData = req.body;
         console.log("🚀 ~ formInputData:", formInputData)
         
@@ -43,7 +41,7 @@ export async function addGamePost(req, res) {
                 formData: {
                     endpoint: `add-game`,
                     errorsMap: errors.mapped(),  
-                    game,
+                    formInputData,
                     formSchema: gameCardSchema,
                     genreSchema,
                 }
@@ -144,126 +142,190 @@ export async function addGamePost(req, res) {
     }
 }
 
-
-// INSERT INTO games_genres (game_id, genre_id)
-//     VALUES 
-//     ($1, $2), 
-//     ($3, $4)`, ['1', '2', '1', '3']
-
-// addedGameTableData: [  {
-//     id: 25,
-//     name: 'прпар',
-//     description: 'арапр',
-//     price: '22.00',
-//     created_at: '15:34:01.18+00'        
-//   }
-
-/* 
-1.Добавить жанры к игре
-a) SELECT id FROM genres
-WHERE name IN ('$1', '$2')
-AND id LIKE ('$3', '$4')
-ORDER BY id ASC
-
-('$1', '$2') <=> values = ['rpg', 'rts']
-pool.query(query, values)
-
-
-
-
-SELECT id, name from $table
-WHERE name =/LIKE/> $1
-('$1') <=> value = ['rpg']
-
-*/
-
-//EDIT USER
+//EDIT GAME
 
 //GET
-// export const editUserGet = async (req, res) => {
+export const editGameGet = async (req, res) => {
 
-//     const userId = Number(req.params.id);
+    //объект для заполнения данными об игре, который будет передан в шаблон
+    let formInputData = {};
 
-//     if (isNaN(userId)) {
-//         log('Некорректный ID');
-//         res.status(404).send('Некорректный ID');
-//         return;
-//     }
-//     const queryResponse = await pool.query(`
-//         SELECT * FROM usernames
-//         WHERE id = $1
-//         `, [userId]);
+    const gameId = Number(req.params.id);
+
+    //получаем базовые данные о редактируемой игре из таблицы games. ПРиходит массив с объектом внутри, поэтому сразу раскрываем его и получаем объект
+    const [gameData] = await selectFromTable({
+        table: "games",
+        where: {
+            id: { op: "=", value: gameId },
+        },
+    });
+    // console.log("🚀 ~ editGameGet ~ gamesRow:", gameData);
+
+    //добавляем полученные данные в formInputData
+    formInputData = gameData;
+
+    //получаем данные о жанрах редактируемой игры из таблицы games_genres
+    const games_genresRows = await selectFromTable({
+        table: "games_genres",
+        where: {
+            game_id: { op: "=", value: gameId },
+        },
+    });
+    // console.log("🚀 ~ editGameGet ~ games_genresRows:", games_genresRows);
+
+    const genreNames = [];
+    //Если у игры указаны, жанры получаем name жанров из таблицы genres
+    if (games_genresRows.length > 0) {
+        const genreRows = await selectFromTable({
+            table: "genres",
+            where: {
+                id: {
+                    op: "IN",
+                    value: games_genresRows.map(
+                        ({ game_id, genre_id }) => genre_id
+                    ),
+                },
+            },
+        });
+        //console.log("🚀 ~ editGameGet ~ genreRows:", genreRows);
+
+        const genreNames = genreRows.map((row) => row.name);
+        //console.log("🚀 ~ editGameGet ~ genreNames:", genreNames);
+
+        //добавляем имена жанров в поле genres в formInputData
+        formInputData.genre = genreNames;
+    }
+
+    //раскрываем массив game и достаем оттуда объект с игрой (в шаблон передается именно объект)
+    //console.log("🚀 ~ editGameGet ~ formInputData:", formInputData)
     
-//     const user = queryResponse.rows[0];
 
-//     if (!user) {
-//         console.log("Пользователь не найден!");
-//         res.status(404).send('Пользователь не найден!');
-//         return;
-//     }
-
-//     res.render("edit-user", {
-//         heading: `Редактирование пользователя ${user.firstname}`,
-//         formInputData: {
-//             endpoint: `/${user.id}/edit`,
-//             user, 
-//             formSchema: gameCardSchema
-//         },
-//     });
-// };
+    res.render("edit-game", {
+        heading: `Редактирование игры`,
+        formData: {
+            endpoint: `${gameId}/edit`,
+            formInputData,
+            formSchema: gameCardSchema,
+        },
+    });
+};
 
 // //POST
-// export const editUserPost = async (req, res) => {
+export const editGamePost = async (req, res) => {
     
-//     const errors = validationResult(req);
-//     const user = req.body;
-//     const userId = Number(req.params.id);
+    const errors = validationResult(req);
+    //собираем обновленные данные из формы
+    const formInputData = req.body;
+    console.log("🚀 ~ editGamePost ~ formInputData:", formInputData)
 
-//     if (!errors.isEmpty()) {
-//         return res.render('edit-user', {
-//             heading: 'Ошибка ввода данных',
-//             formInputData: {
-//                 endpoint: `/${req.params.id}/edit`,
-//                 errorsMap: errors.mapped(),  
-//                 user, 
-//                 formSchema: gameCardSchema
-//             }
-//         })
-//     }
-//     /* UPDATE table_name
-//         SET column1 = value1, column2 = value2
-//         WHERE condition; */ 
+    if (!errors.isEmpty()) {
+            return res.render('edit-game', {
+                heading: 'Ошибка ввода данных',
+                formData: {
+                    endpoint: `edit-game`,
+                    errorsMap: errors.mapped(),  
+                    formInputData,
+                    formSchema: gameCardSchema,
+                }
+            })
+    }
+
     
-//     const updateParams = Object.entries(req.body).filter(([key, value]) => value.trim() !== '');;
+    const gameId = Number(req.params.id);
 
-//     let updateQuery = `UPDATE usernames SET`;
-//     const columns = [];
-//     const values = [];
+    //по айди берем из базы текущие данные об игре из таблицы games
+    const [currentGameData] = await selectFromTable({
+        table: 'games',
+        where: {
+            id: { op: '=', value: gameId }
+        }
+    });
+    console.log("🚀 ~ editGamePost ~ currentGameData:", currentGameData)
 
-//     updateParams.forEach(([param, value], i) => {
-//         columns.push(`${param} = $${i + 1}`);
-//         values.push(value);
-//     });
+    //по айди берем из базы текущие данные о жанре игры из таблицы games_genres
+    const currentGenreIdsRows =  await selectFromTable({
+        table: 'games_genres',
+        columns: ['genre_id'],
+        where: {
+            game_id: { op: '=', value: gameId}
+        }
+    })
+    console.log("🚀 ~ editGamePost ~ currentGenreIdsRows:", currentGenreIdsRows);
 
-//     updateQuery += ` ` + columns.join(', ') + ` WHERE id = ${userId}`;
+    const currentGenreIdsSet = new Set(currentGenreIdsRows.map(r => r.genre_id));
+    console.log("🚀 ~ editGamePost ~ currentGenreIdsSet:", currentGenreIdsSet)
 
-//     await pool.query(updateQuery, values);
-//     log(await selectRows('usernames'));
-//     log('hello');
+    const newGenreNames = formInputData.genre;
+
+    const newGenreIdsRows = await selectFromTable({
+        table: 'genres',
+        columns: ['id'],
+        where: {
+            name: { op: 'IN', value: newGenreNames}
+        }
+    });
+    console.log("🚀 ~ editGamePost ~ newGenreIdsRows:", newGenreIdsRows);
+
+    const newGenreIdsSet = new Set(newGenreIdsRows.map(r => r.id));
+    console.log("🚀 ~ editGamePost ~ newGenreIdsSet:", newGenreIdsSet)
+
+    const genreIdsToInsert = [...newGenreIdsSet].filter(id => !currentGenreIdsSet.has(id));
+    console.log("🚀 ~ editGamePost ~ genreIdsToInsert:", genreIdsToInsert);
+
+    const genreIdsToDelete = [...currentGenreIdsSet].filter(id => !newGenreIdsSet.has(id));
+    console.log("🚀 ~ editGamePost ~ genreIdsToDelete:", genreIdsToDelete)
+
+
+    if (genreIdsToInsert.length > 0) {
+        const addedGenres = await addToTable({
+            table: 'games_genres',
+            columns: ['game_id', 'genre_id'],
+            rowData: genreIdsToInsert.map(genreId => [gameId, genreId]),
+        });
+        // console.log("🚀 ~ editGamePost ~ addedGenres:", addedGenres)
+    }
     
-//     res.redirect("/");
-// };
+    if (genreIdsToDelete.length > 0) {
+        const deletedGenres = await deleteFromTable({
+            table: "games_genres",
+            where: {
+                game_id: { op: "=", value: gameId },
+                genre_id: { op: "IN", value: genreIdsToDelete },
+            },
+            returning: "*",
+        });
+    }
 
 
-// //DELETE USER
 
-// //GET
-// export const deleteUserGet = async (req, res) => {
-//     const userId = Number(req.params.id);    
-//     const deleteQuery = `DELETE FROM usernames
-//         WHERE id = $1;`
-//     await pool.query(deleteQuery, [userId]);
-//     res.redirect('/');
+
+
+
+    //собираем их в один объект
+
+    //сравниваем данные из формы с текущими данными. Если значение отличается - сохраняем имя поля и значение в новый объект 
+
+    //составляем объект для updateInTable
+
+    // updateInTable({table: , set: , where: });
+
+    
+
+    
+    
+    res.redirect("/games");
+};
+
+
+//DELETE GAME
+
+//GET
+// export const deleteGameGet = async (req, res) => {
+    // const gameId = Number(req.params.id);    
+    // const deleteQuery = `DELETE FROM usernames
+    //     WHERE id = $1;`
+    // await pool.query(deleteQuery, [userId]);
+    // res.redirect('/');
 // }
 
 /* UTILS */

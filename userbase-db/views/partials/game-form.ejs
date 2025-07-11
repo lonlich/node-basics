@@ -2,32 +2,46 @@
     const {
         endpoint = '',
         errorsMap = {},
-        game = {},
+        formInputData = {},
         formSchema = {},
     } = formData || {};
 %>
 <form action="/games/<%= endpoint %>" method="post">
     <% Object.keys(formSchema).forEach((field) => { 
+        if (field === 'genre') {
+        //log('field: ',field); 
+        //log('field.options: ', formSchema[field].options) 
+        }
+                        
         if (formSchema[field].visibleInForm === false) return; 
         
         if (formSchema[field].isMultiple) { %>
             <legend><%= formSchema[field].label %>:</legend>
-            <% for (const option in formSchema[field].options) { %>
-                <fieldset>
-                    <label><input 
-                        type="<%= formSchema[field].type %>" 
-                        name="<%= field %>" 
-                        value="<%= option %>">
-                        <%= formSchema[field].options[option].label %></label>
-                </fieldset>
-            <% }
+            <% 
+                if (formSchema[field].options) {
+                    for (const option in formSchema[field].options) { %>
+                    <fieldset>
+                        <label><input 
+                            type="<%= formSchema[field].type %>" 
+                            name="<%= field %>" 
+                            value="<%= option %>"
+                            <% 
+                                if (formInputData[field]?.includes(option)) {
+                            %>
+                                checked
+                            <% } %>
+                            >
+                            <%= formSchema[field].options[option].label %></label>
+                    </fieldset>
+                <% }
+                }
         } %>
         
         
         <label for="<%= field %>"><%= formSchema[field].label %></label>
         </br>
         <input 
-            value="<%= game[field] %>" 
+            value="<%= formInputData[field] %>" 
             type="<%= formSchema[field].type %>" 
             id="<%= field %>" 
             name="<%= field %>" 
@@ -40,3 +54,4 @@
         <% }); %>
             <button type="submit">Submit</button>
 </form>
+

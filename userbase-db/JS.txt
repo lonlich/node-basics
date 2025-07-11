@@ -1,0 +1,302 @@
+export const genreSchema = {
+    rpg: { label: "RPG" },
+    rts: { label: "RTS" },
+    action: { label: "Action" },
+};
+
+//определяет, какие поля выводятся в карточке игры. Позволяет выводить не все поля из базы, а только нужные
+export const gameCardSchema = {
+    id: { label: "ID игры", type: "text", visibleInForm: false },
+    name: { label: "Название", type: "text" },
+    description: { label: "Описание", type: "text" },
+    price: { label: "Цена", type: "number" },
+    created_at: { label: "Добавлено", type: "text", visibleInForm: false },
+    genre: { label: "Жанр", type: "checkbox", isMultiple: true, options: genreSchema },
+};
+
+<%  
+    const {
+        endpoint = '',
+        errorsMap = {},
+        formInputData = {},
+        formSchema = {},
+    } = formData || {};
+%>
+<form action="/games/<%= endpoint %>" method="post">
+    <% Object.keys(formSchema).forEach((field) => { 
+        if (field === 'genre') {
+        log('field: ',field); 
+        log('field.options: ', formSchema[field].options) }
+                        
+        if (formSchema[field].visibleInForm === false) return; 
+        
+        if (formSchema[field].isMultiple) { %>
+            <legend><%= formSchema[field].label %>:</legend>
+            <% 
+                if (formSchema[field].options) {
+                    for (const option in formSchema[field].options) { %>
+                    <fieldset>
+                        <label><input 
+                            type="<%= formSchema[field].type %>" 
+                            name="<%= field %>" 
+                            value="<%= option %>"
+                            <% 
+                            formInputData[field].forEach(v => {
+                                if (v in field?.options) { %>
+                                checked
+                            <% }
+                            }) 
+                            %>
+                            >
+                            <%= formSchema[field].options[option].label %></label>
+                    </fieldset>
+                <% }
+                }
+        } %>
+        
+        
+        <label for="<%= field %>"><%= formSchema[field].label %></label>
+        </br>
+        <input 
+            value="<%= formInputData[field] %>" 
+            type="<%= formSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+        />
+    </br>
+        <% if (errorsMap[field]?.path === field) { 
+            console.log('Есть ошибка!');%>
+            <p><%= errorsMap[field].msg %></p>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
+
+📋 Logger:
+ field:  genre
+=====================
+📋 Logger:
+ field.options:  {
+  rpg: { label: 'RPG' },
+  rts: { label: 'RTS' },
+  action: { label: 'Action' }
+}
+
+Почему я получаю ошибку, ведь я делаю проверку, что formSchema[label].options существует?
+
+TypeError: C:\Users\Admin\Dropbox\repos\node-basics\userbase-db\views\edit-game.ejs:3
+    1| <h1><%= heading %></h1>
+    2| 
+ >> 3| <%- include('partials/game-form') %>
+
+C:\Users\Admin\Dropbox\repos\node-basics\userbase-db\views\partials\game-form.ejs:27
+    25|                             name="<%= field %>" 
+    26|                             value="<%= option %>"
+ >> 27|                             <% 
+    28|                             formInputData[field].forEach(v => {
+    29|                                 if (v in field?.options) { %>
+    30|                                 checked
+
+Cannot use 'in' operator to search for 'rts' in undefined
+    at eval ("C:\\Users\\Admin\\Dropbox\\repos\\node-basics\\userbase-db\\views\\partials\\game-form.ejs":55:39)
+    at Array.forEach (<anonymous>)
+    at eval ("C:\\Users\\Admin\\Dropbox\\repos\\node-basics\\userbase-db\\views\\partials\\game-form.ejs":54:50)
+    at Array.forEach (<anonymous>)
+    at eval ("C:\\Users\\Admin\\Dropbox\\repos\\node-basics\\userbase-db\\views\\partials\\game-form.ejs":24:32)
+    at game-form (C:\Users\Admin\Dropbox\repos\node-basics\node_modules\ejs\lib\ejs.js:703:17)
+    at include (C:\Users\Admin\Dropbox\repos\node-basics\node_modules\ejs\lib\ejs.js:701:39)
+    at eval ("C:\\Users\\Admin\\Dropbox\\repos\\node-basics\\userbase-db\\views\\edit-game.ejs":14:17)
+    at edit-game (C:\Users\Admin\Dropbox\repos\node-basics\node_modules\ejs\lib\ejs.js:703:17)
+    at tryHandleCache (C:\Users\Admin\Dropbox\repos\node-basics\node_modules\ejs\lib\ejs.js:274:36)
+	
+===
+
+<% 
+                            formInputData[field].forEach(val => {
+                                log('val', val);
+                                log('formSchema[field].options', formSchema[field].options)
+                                if (val in formSchema[field].options) { %>
+                                checked
+                            <% }
+                            }) 
+                            %>
+							
+Где то в этом коде ошибка. Даже если formInputData[field] содержит два значения, checked выполняется для всех полей, которые есть в  formSchema[field].options. Как сделать так, чтобы checked выполнялась только для значений, котрые переданы в formInputData[field]?
+
+===
+
+Все равно не понимаю почему, разве val in formSchema[field].options не должно давать false в случае, если formInputData[field] содержит только rts, rpg, но не action. Ведь action просто не будет проверяться в if, разве нет?
+==
+
+Почему в formInputData.genre не записывается массив genreNames?
+
+let formInputData = {};
+    formInputData = gamesRow;
+    formInputData.genre = genreNames;
+	
+	 ~ editGameGet ~ gamesRow: [  
+  {
+    id: 1,
+    name: 'warcraft',
+    description: null,
+    price: '60.00',
+    created_at: '12:43:24.25+00'
+  }
+]
+🚀 ~ editGameGet ~ games_genresRows: [ { game_id: 1, genre_id: 2 }, { game_id: 1, genre_id: 3 } ]
+🚀 ~ editGameGet ~ genreRows: [ { id: 2, name: 'rts' }, { id: 3, name: 'rpg' } ]
+🚀 ~ editGameGet ~ genreNames: [ 'rts', 'rpg' ]
+🚀 ~ editGameGet ~ formInputData: [
+  {
+    id: 1,
+    name: 'warcraft',
+    description: null,
+    price: '60.00',
+    created_at: '12:43:24.25+00'
+  },
+  genre: []
+  
+ ====
+ 
+ Вопрос по этому коду:
+ 
+ <form action="/games/<%= endpoint %>" method="post">
+    <% Object.keys(formSchema).forEach((field) => { 
+        if (field === 'genre') {
+        log('field: ',field); 
+        log('field.options: ', formSchema[field].options) }
+                        
+        if (formSchema[field].visibleInForm === false) return; 
+        
+        if (formSchema[field].isMultiple) { %>
+            <legend><%= formSchema[field].label %>:</legend>
+            <% 
+                if (formSchema[field].options) {
+                    for (const option in formSchema[field].options) { %>
+                    <fieldset>
+                        <label><input 
+                            type="<%= formSchema[field].type %>" 
+                            name="<%= field %>" 
+                            value="<%= option %>"
+                            <% 
+                                if (formInputData[field]?.includes(option)) {
+                            %>
+                                checked
+                            <% } %>
+                            >
+                            <%= formSchema[field].options[option].label %></label>
+                    </fieldset>
+                <% }
+                }
+        } %>
+        
+        
+        <label for="<%= field %>"><%= formSchema[field].label %></label>
+        </br>
+        <input 
+            value="<%= formInputData[field] %>" 
+            type="<%= formSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+        />
+    </br>
+        <% if (errorsMap[field]?.path === field) { 
+            console.log('Есть ошибка!');%>
+            <p><%= errorsMap[field].msg %></p>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
+
+1. Не лучше ли сделать здесь guard-clause, чтобы избавиться от уровня вложенности? Вот так:
+
+if (!formSchema[field].options) return; 
+                    for (const option in formSchema[field].options) { %>
+                    <fieldset>
+                        <label><input 
+                            type="<%= formSchema[field].type %>" 
+                            name="<%= field %>" 
+                            value="<%= option %>"
+                            <% 
+                                if (formInputData[field]?.includes(option)) {
+                            %>
+                                checked
+                            <% } %>
+                            >
+                            <%= formSchema[field].options[option].label %></label>
+                    </fieldset>
+                <% }
+
+2. У меня могут быть разные типы multiple field. Сейчас это checkbox, но может быть допустим radio-button. Правильно ли я понимаю, что у них может быть другая логика? Если да, то нужно добавлять еще одну проверку и отдельную ветку?
+
+if (!formSchema[field].options) return; 
+if (formSchema[field].type === 'checkbox') {
+for (const option in formSchema[field].options) { %>
+<fieldset>
+    <label><input 
+        type="<%= formSchema[field].type %>" 
+        name="<%= field %>" 
+        value="<%= option %>"
+        <% 
+            if (formInputData[field]?.includes(option)) {
+        %>
+            checked
+        <% } %>
+        >
+        <%= formSchema[field].options[option].label %></label>
+</fieldset>
+<% }}
+
+if (formSchema[field].type === 'radiobutton') {
+    логика для radiobutton
+}
+
+===
+
+Я продолжаю писать логику для post-запроса с обновлением игры:
+
+export const editGamePost = async (req, res) => {
+    
+    const errors = validationResult(req);
+    //собираем обновленные данные из формы
+    const formInputData = req.body;
+
+    if (!errors.isEmpty()) {
+            return res.render('edit-game', {
+                heading: 'Ошибка ввода данных',
+                formData: {
+                    endpoint: `edit-game`,
+                    errorsMap: errors.mapped(),  
+                    formInputData,
+                    formSchema: gameCardSchema,
+                }
+            })
+    }
+
+    
+    const gameId = Number(req.params.id);
+
+    //по айди берем из базы текущие данные об игре
+
+    //сравниваем данные из формы с текущими данными. Если значение отличается - сохраняем имя поля и значение в новый объект 
+
+    //составляем объект для updateInTable
+
+Вопрос про пункт: //сравниваем данные из формы с текущими данными. Если значение отличается - сохраняем имя поля и значение в новый объект 
+
+Пока я придумал самое очевидное решение: 
+
+Для информации из таблицы games:
+1. сделать два объекта: currentGameData и newGameData.
+2. В currentGameData записываю результат запроса в БД по id редактируемой игры
+3. В newGameData записываю информацию из req.body
+4. сделать объект updatedGameData для данных, которые надо добавить в таблицу (они отличаются от текущих)
+5. Затем делаю что-то вроде: 
+
+for (const field in updatedGameData) {
+    newGameData[field] !== currentGameData[field] ? updatedGameData[field] = newGameData[field]
+}
+
+Далее делаю по тому же принципу для жанров и таблицы games_genres
+
+Это правильный подход? Мне он кажется слишком "ручным" и громоздким с множеством запросов. Как будто должен существовать способ проще, чтобы понять, отличается ли добавляемая информация от уже существующей. Может быть эта проверка излишня и нужно просто записать все новые данные пусть и с перезаписью одинаковых значений? 

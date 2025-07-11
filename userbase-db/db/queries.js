@@ -1,46 +1,25 @@
 import pool from "./pool.js";
 import { normalizeUser } from "./normalizeUser.js";
 
-//get all rows
-// export const selectRows = async (
-//     table,
-//     columns = "*",
-//     conditionValues = "",
-//     orderBy = "id ASC"
-// ) => {
-//     if (!table) {
-//         warn("Не указано имя целевой таблицы в selectRows");
-//     }
-
-//     const query = `SELECT ${columns} FROM ${table} ORDER BY ${orderBy}`;
-
-//     const { rows } = await pool.query(query);
-
-//     if (rows.length === 0) {
-//         log(`В таблице ${table} нет строк с данными`);
-//     }
-//     return rows;
-// };
-
-
 export const selectFromTable = async ({
     table,
     columns = "*", // можно передавать массив с названиями колонок или просто строку
     where, // { fieldName: { op: "IN", value: ["rpg", "rts"] }, 
-    orderBy = "id ASC",
+    orderBy = "",
 }) => {
     if (!table) {
         warn("Не указано имя целевой таблицы в selectRows");
+        return;
     }
     //составляем строку с колонками. Поддерживается columns в виде массива или строки
     const columnsString = Array.isArray(columns) ? columns.join(", ") : columns;
 
     //составляем строку с условиями (если они переданы)
     let whereClause = "";
-    const values = [];
+    const queryValues = [];
 
     if (where) {
-        console.log("🚀 ~ where:", where)
+        // console.log("🚀 ~ where:", where)
         const conditions = [];
         let i = 1;
 
@@ -53,18 +32,21 @@ export const selectFromTable = async ({
 
                 const placeholders = inValuesArr.map(() => `$${i++}`);
                 conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
-                values.push(...inValuesArr);
+                queryValues.push(...inValuesArr);
             } else {
                 conditions.push(`${column} ${op} $${i++}`);
-                values.push(value);
+                queryValues.push(value);
             }
         });
 
         whereClause = `WHERE ${conditions.join(" AND ")}`;
     }
-    const query = `SELECT ${columnsString} FROM ${table} ${whereClause} ORDER BY ${orderBy}`;
-    const { rows } = await pool.query(query, values);
+    const orderByClause = orderBy ? `ORDER BY ${orderBy}` : '';
+    const query = `SELECT ${columnsString} FROM ${table} ${whereClause} ${orderByClause}`;
+    // console.log("🚀 ~ query:", query)
+    const { rows } = await pool.query(query, queryValues);
 
+    // console.log("🚀 ~ rows:", rows)
     if (rows.length === 0) {
         log(`В таблице ${table} нет строк с данными`);
     }
@@ -73,44 +55,114 @@ export const selectFromTable = async ({
 };
 
 
-//add item to DB
-export const addItem = async (table, columns, item) => {
+//add data to DB
+export const addToTable = async ({ table, columns, rowData }) => {
     try {
-        //составляем строку с колонками. Поддерживается columns в виде массива или строки
-        const columnsString = Array.isArray(columns) ? columns.join(', ') : columns;
-        console.log("🚀 ~ addItem ~ item:", item);
-        if (!table || !columns) {
+        // console.log("🚀 rowData:", rowData);
+        //если в rowData передали передали просто массив значений (для одной строки), оборачиваем его во внешний массив для соответствия формату
+        if(!Array.isArray(rowData[0])) {
+            rowData = [rowData];
+        }
+        
+        if (!table || !columns || !rowData) {
             warn(
-                "Не указано имя целевой таблицы или колонки для заполнения в addItem"
+                "Не указаны имя целевой таблицы или колонки или rowData для вставки"
             );
+            
             return;
         }
-        let itemArr = [];
-        itemArr =
-            typeof item === "object" && item !== null
-                ? (itemArr = Object.entries(item))
-                : item;
+        //составляем строку с колонками. Поддерживается columns в виде массива или строки
+        const columnsString = Array.isArray(columns) ? columns.join(', ') : columns;
+        // console.log("🚀 ~ addToTable ~ columnsString:", columnsString)
 
-        console.log("🚀 ~ addItem ~ itemArr:", itemArr);
-        const valueParams = itemArr
-            .map(([key, value], i) => {
-                const paramIndex = `$${i + 1}`;
-                // console.log("🚀 ~ valueParams ~ string:", paramIndex);
+        let valuePlaceholders = '';
+        const valuePlaceholdersArr = [];
+        const valueParamsArr = [];
+        let i = 1;
 
-                return paramIndex;
-            })
-            .join(", ");
-        const addQuery = `INSERT INTO ${table} (${columnsString}) VALUES (${valueParams}) RETURNING *`;
+        rowData.forEach(row => {
+            valueParamsArr.push(...row);
+            valuePlaceholdersArr.push(`(${row.map(() => `$${i++}`)})`)
+        });
 
-        console.log("🚀 ~ addItem ~ addQuery:", addQuery);
-        const addedData = (await pool.query(addQuery, Object.values(item)));
-        // console.log("🚀 ~ addItem ~ addedData:", addedData)
-        // console.log("!!! SUCCESS !!!");
-        return addedData.rows[0];
+        valuePlaceholders = valuePlaceholdersArr.join(', ');
+
+        // console.log("🚀 ~ addToTable ~ valuePlaceholders:", valuePlaceholders)
+        
+        const addQuery = `INSERT INTO ${table} (${columnsString}) VALUES ${valuePlaceholders} RETURNING *`;
+
+        const addedData = (await pool.query(addQuery, valueParamsArr));
+        console.log("!!! SUCCESS !!!");
+        // console.log("🚀 ~ addToTable ~ addedData.rows[0]:", addedData.rows)
+        return addedData.rows;
+
     } catch (error) {
         warn(error);
     }
 };
+
+//кастомная версия addToTable для добавления одной строки. Значения в виде [массив значений строки] оборачиваются в еще один массив (для соответствия формату значения addToTable - массив массивов значений) и вызывают addToTable
+export const addRowToTable = (addQueryParams) => {
+    return addToTable({
+        ...addQueryParams,
+        rowData: [addQueryParams.rowData]
+    });
+}
+
+//DELETE FROM TABLE
+export const deleteFromTable = async ({
+    table,
+    where, // { fieldName: { op: "IN", value: ["rpg", "rts"] }, 
+    returning,
+}) => {
+    if (!table) {
+        warn("Не указано имя целевой таблицы в deleteFromTable");
+        return;
+    }
+
+    //составляем строку с условиями (если они переданы)
+    let whereClause = "";
+    const queryValues = [];
+
+    if (where) {
+        // console.log("🚀 ~ where:", where)
+        const conditions = [];
+        let i = 1;
+
+        Object.entries(where).forEach(([column, { op, value }]) => {
+            // console.log("🚀 ~ Object.entries ~ value:", value)
+            if (op === "IN") {
+                //если пришел не массив (например - одно значение без массива), превращаем его в массив, чтобы сработал value.map
+                const inValuesArr = Array.isArray(value) ? value : [value];
+                // console.log("🚀 ~ Object.entries ~ value:", value)
+
+                const placeholders = inValuesArr.map(() => `$${i++}`);
+                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
+                queryValues.push(...inValuesArr);
+            } else {
+                conditions.push(`${column} ${op} $${i++}`);
+                queryValues.push(value);
+            }
+                
+        });
+
+        whereClause = `WHERE ${conditions.join(" AND ")}`;
+    }
+    // console.log("🚀 ~ Object.entries ~ queryValues:", queryValues)
+    const returningClause = returning ? `RETURNING ${returning}` : '';
+    const query = `DELETE FROM ${table} ${whereClause} ${returningClause}`;
+    // console.log("🚀 ~ query:", query)
+    const { rows } = await pool.query(query, queryValues);
+
+    // console.log("🚀 ~ rows:", rows)
+    if (rows.length === 0) {
+        log(`В таблице ${table} ничего не удалено`);
+    }
+
+    return rows;
+};
+
+
 
 //USERBASE
 
