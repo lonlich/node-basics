@@ -5,7 +5,7 @@ import { gameCardSchema, genreSchema } from "../constants/gameFormSchema.js";
 import { addRowToTable, addToTable, deleteFromTable, selectFromTable } from "../db/queries.js";
 import pool from "../db/pool.js";
 import { tableMap } from "../db/tableMap.js";
-import { updateInTable } from "../testjs.js";
+import { updateInTable } from "../db/queries.js";
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -213,25 +213,29 @@ export const editGameGet = async (req, res) => {
 // //POST
 export const editGamePost = async (req, res) => {
     
+    const gameId = Number(req.params.id);
+    
     const errors = validationResult(req);
+
     //собираем обновленные данные из формы
     const formInputData = req.body;
+
     console.log("🚀 ~ editGamePost ~ formInputData:", formInputData)
 
     if (!errors.isEmpty()) {
+                    console.log("🚀 ~ editGamePost ~ errors.mapped():", errors.mapped());
+
             return res.render('edit-game', {
                 heading: 'Ошибка ввода данных',
                 formData: {
-                    endpoint: `edit-game`,
-                    errorsMap: errors.mapped(),  
+                    endpoint: `${gameId}/edit`,
+                    errorsMap: errors.mapped(), 
                     formInputData,
                     formSchema: gameCardSchema,
                 }
             })
     }
-
     
-    const gameId = Number(req.params.id);
 
     //по айди берем из базы текущие данные об игре из таблицы games
     const [currentGameData] = await selectFromTable({
@@ -240,7 +244,41 @@ export const editGamePost = async (req, res) => {
             id: { op: '=', value: gameId }
         }
     });
-    console.log("🚀 ~ editGamePost ~ currentGameData:", currentGameData)
+
+    console.log("🚀 ~ editGamePost ~ currentGameData:", currentGameData);
+
+    //составляем объект с полями базовой инфы, которую нужно обновить
+
+    const gameDataToUpdate = Object.fromEntries(
+        tableMap.games.reduce((acc, { columnName, type }) => {
+            const normalizedInputValue = normalizeByColumnType(formInputData[columnName], type);
+            if (normalizedInputValue !== currentGameData[columnName]) {
+                console.log('🚀 ~ columnName:', columnName);
+                // console.log("🚀 ~ typeof currentGameData[columnName]:", typeof currentGameData[columnName])
+                console.log('🚀 ~ typeof normalizedInputValue:', typeof normalizedInputValue);
+                console.log('🚀 ~ currentGameData[columnName]:', currentGameData[columnName]);
+                console.log('🚀 ~ formInputData[columnName]:', formInputData[columnName]);
+                console.log('🚀 ~ typeof formInputData[columnName]:', typeof formInputData[columnName]);
+                // const normalizedInputValue = normalizeByColumnType(formInputData[columnName], type);
+                acc.push([columnName, normalizedInputValue]);
+            }
+            console.log('🚀 ~ editGamePost ~ acc:', acc);
+            return acc;
+        }, [])
+    );
+    console.log('🚀 ~ editGamePost ~ gameDataToUpdate:', gameDataToUpdate);
+
+    //обновляем данные в таблице games, если есть что обновлять
+    if (Object.entries(gameDataToUpdate).length > 0) {
+        const updatedGameData = await updateInTable({
+            table: 'games',
+            set: gameDataToUpdate,
+            where: {
+                id: { op: '=', value: gameId },
+            },
+        });
+        console.log('🚀 ~ editGamePost ~ updatedGameData:', updatedGameData);
+    }
 
     //по айди берем из базы текущие данные о жанре игры из таблицы games_genres
     const currentGenreIdsRows =  await selectFromTable({
@@ -264,18 +302,19 @@ export const editGamePost = async (req, res) => {
             name: { op: 'IN', value: newGenreNames}
         }
     });
-    console.log("🚀 ~ editGamePost ~ newGenreIdsRows:", newGenreIdsRows);
+    // console.log("🚀 ~ editGamePost ~ newGenreIdsRows:", newGenreIdsRows);
 
     const newGenreIdsSet = new Set(newGenreIdsRows.map(r => r.id));
-    console.log("🚀 ~ editGamePost ~ newGenreIdsSet:", newGenreIdsSet)
+    // console.log("🚀 ~ editGamePost ~ newGenreIdsSet:", newGenreIdsSet)
 
+    //сравниваем данные из формы с текущими данными. Если значение отличается - сохраняем имя поля и значение в новый объект - для добавления или удаления
     const genreIdsToInsert = [...newGenreIdsSet].filter(id => !currentGenreIdsSet.has(id));
-    console.log("🚀 ~ editGamePost ~ genreIdsToInsert:", genreIdsToInsert);
+    // console.log("🚀 ~ editGamePost ~ genreIdsToInsert:", genreIdsToInsert);
 
     const genreIdsToDelete = [...currentGenreIdsSet].filter(id => !newGenreIdsSet.has(id));
-    console.log("🚀 ~ editGamePost ~ genreIdsToDelete:", genreIdsToDelete)
+    // console.log("🚀 ~ editGamePost ~ genreIdsToDelete:", genreIdsToDelete)
 
-
+    //добавляем новые жанры, которым поставили галку
     if (genreIdsToInsert.length > 0) {
         const addedGenres = await addToTable({
             table: 'games_genres',
@@ -285,6 +324,7 @@ export const editGamePost = async (req, res) => {
         // console.log("🚀 ~ editGamePost ~ addedGenres:", addedGenres)
     }
     
+    //удаляем жанры, с которых сняли галку
     if (genreIdsToDelete.length > 0) {
         const deletedGenres = await deleteFromTable({
             table: "games_genres",
@@ -296,23 +336,6 @@ export const editGamePost = async (req, res) => {
         });
     }
 
-
-
-
-
-
-    //собираем их в один объект
-
-    //сравниваем данные из формы с текущими данными. Если значение отличается - сохраняем имя поля и значение в новый объект 
-
-    //составляем объект для updateInTable
-
-    // updateInTable({table: , set: , where: });
-
-    
-
-    
-    
     res.redirect("/games");
 };
 
@@ -320,17 +343,27 @@ export const editGamePost = async (req, res) => {
 //DELETE GAME
 
 //GET
-// export const deleteGameGet = async (req, res) => {
-    // const gameId = Number(req.params.id);    
-    // const deleteQuery = `DELETE FROM usernames
-    //     WHERE id = $1;`
-    // await pool.query(deleteQuery, [userId]);
-    // res.redirect('/');
-// }
+export const deleteGameGet = async (req, res) => {
+    
+    const gameId = Number(req.params.id);    
+
+    const deletedGame = await deleteFromTable({
+        table: 'games',
+        where: {
+            id: { op: '=', value: gameId},
+        },
+        returning: '*',
+    
+    });
+
+    console.log("🚀 ~ deleteGameGet ~ deletedGame:", deletedGame);
+
+    res.redirect('/games');
+}
 
 /* UTILS */
 function normalizeByColumnType(value, type) {
-    if (type === "numeric" || type === "integer") {
+    if ( type === "integer" || type === 'numeric') {
         if (value === "") return null;
         //если пустая строка, в numeric/integer колонку записываем null
         const num = Number(value);

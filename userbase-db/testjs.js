@@ -242,7 +242,7 @@ RETURNING *;
 
 */
 
-export const updateInTable = async ({ table, set, where }) => {
+export const updateInTableTest = async ({ table, set, where }) => {
 
     if (!table || !set || !where) {
         warn("Не указана таблица, set или where");
@@ -431,4 +431,13 @@ newGenreIdsArr: [ 1, 2, 3 ]
 genreIdsToInsert = [ 2, 3 ]
 
 genreIdsToInsert.map(genreId => [gameId, genreId])
+
+
+formInputData: { name: 'war', description: '', price: '59', genre: [ 'rpg', 'rts' ] }     
+🚀 ~ editGamePost ~ currentGameData: {
+    id: 1,
+    name: 'warcraft',
+   description: null,
+    price: '60.00',
+    created_at: '12:43:24.25+00'
 */

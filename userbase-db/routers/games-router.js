@@ -31,7 +31,7 @@ import { gameCardSchema as gameCardSchema } from "../constants/gameFormSchema.js
 import { genreSchema } from "../constants/gameFormSchema.js";
 import { gameSchema } from "../constants/gameFormSchema.js";
 import { validateAddedGame } from "../validators/validateAddedGame.js";
-import { addGameGet, addGamePost, editGameGet, editGamePost } from "../controllers/gameController.js";
+import { addGameGet, addGamePost, deleteGameGet, editGameGet, editGamePost } from "../controllers/gameController.js";
 
 const app = express();
 
@@ -163,7 +163,7 @@ gamesRouter.get("/:id/edit", editGameGet);
 gamesRouter.post("/:id/edit", validateAddedGame, editGamePost);
 
 //delete game
-// gamesRouter.get("/:id/delete", deleteGameGet);
+gamesRouter.get("/:id/delete", deleteGameGet);
 
 // //search user
 // gamesRouter.get("/search", searchControllerGet);

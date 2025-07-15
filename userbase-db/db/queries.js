@@ -1,6 +1,7 @@
 import pool from "./pool.js";
 import { normalizeUser } from "./normalizeUser.js";
 
+//select rows from table
 export const selectFromTable = async ({
     table,
     columns = "*", // можно передавать массив с названиями колонок или просто строку
@@ -55,7 +56,7 @@ export const selectFromTable = async ({
 };
 
 
-//add data to DB
+//add data to table
 export const addToTable = async ({ table, columns, rowData }) => {
     try {
         // console.log("🚀 rowData:", rowData);
@@ -100,6 +101,64 @@ export const addToTable = async ({ table, columns, rowData }) => {
         warn(error);
     }
 };
+
+//update in table
+export const updateInTable = async ({ table, set, where }) => {
+
+    if (!table || !set || !where) {
+        warn("Не указана таблица, set или where");
+        return;
+    }
+
+    //формируем setClause
+    let setClause = '';
+    let i = 1;
+    
+
+    const updates = Object.entries(set).map(([key, value]) => { return `${key} = $${i++}`})
+
+    setClause = `SET ${updates.join(', ')}`;
+    console.log("🚀 ~ updateInTable ~ setClause:", setClause)
+    const queryValues = Object.values(set);
+    console.log("🚀 ~ updateInTable ~ queryValues:", queryValues)
+
+    //формируем whereClause
+    let whereClause = '';
+    const conditions = [];
+
+    Object.entries(where).forEach(([column, { op, value }]) => {
+            // console.log("🚀 ~ Object.entries ~ value:", value)
+            if (op === "IN") {
+                //если пришел не массив (например - одно значение без массива), превращаем его в массив, чтобы сработал value.map
+                const inValuesArr = Array.isArray(value) ? value : [value];
+            // console.log("🚀 ~ Object.entries ~ value:", value)
+
+                const placeholders = inValuesArr.map(() => `$${i++}`);
+                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
+                // values.push(...inValuesArr);
+                queryValues.push(...value);
+            } else {
+                conditions.push(`${column} ${op} $${i++}`);
+                queryValues.push(value);
+            }
+        });
+    
+    whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    console.log("🚀 ~ updateInTable ~ whereClause:", whereClause)
+    const query = `UPDATE ${table} ${setClause} ${whereClause} RETURNING *`;
+
+    console.log("🚀 ~ updateInTable ~ query:", query)
+    const { rows } = await pool.query(query, queryValues);
+
+    // console.log("🚀 ~ updateInTable ~ rows:", rows)
+    if (rows.length === 0) {
+        log(`В таблице ${table} нет строк с данными`);
+    }
+
+    return rows;
+
+}
 
 //кастомная версия addToTable для добавления одной строки. Значения в виде [массив значений строки] оборачиваются в еще один массив (для соответствия формату значения addToTable - массив массивов значений) и вызывают addToTable
 export const addRowToTable = (addQueryParams) => {
