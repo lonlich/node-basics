@@ -22,8 +22,15 @@ import express from "express";
 import expressLayouts from "express-ejs-layouts";
 import { body, validationResult } from "express-validator";
 import axios, { Axios } from "axios";
+import pool from "./db/pool.js";
 
-// import { serveHTML } from "./serveHTML.js";
+//auth
+import session from "express-session";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+
+
+
 import { setupLocals } from "./middleware/setupLocals.js";
 import { validateUser } from "./validators/validateUser.js";
 import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
@@ -60,7 +67,7 @@ import { fileURLToPath } from "url";
 import { indexRouter } from "./routers/index-router.js";
 import { indexGet } from "./controllers/indexController.js";
 import { gamesRouter } from "./routers/games-router.js";
-import { selectFromTable } from "./db/queries.js";
+import { addToTable, selectFromTable } from "./db/queries.js";
 import { gameCardSchema } from "./constants/gameFormSchema.js";
 
 const app = express();
@@ -83,6 +90,10 @@ app.use(setupLocals);
 
 //serve static files
 app.use(express.static(path.join(__dirname, "public")));
+
+//session
+app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
+app.use(passport.session());
 
 /* MAIN */
 
@@ -107,6 +118,97 @@ app.get("/search", searchControllerGet);
 //GAMEBASE
 
 app.use("/games", gamesRouter);
+
+//SIGN UP
+app.get('/signup', (req, res) => {
+    res.render('signup');
+});
+app.post('/signup', async (req, res, next) => {
+    try {
+        await addToTable({
+            table: 'users',
+            columns: 'username, password',
+            rowData: [req.body.username, req.body.password],
+        });
+        log('Пользователь добавлен в бд')
+        res.redirect('/signup')
+    } catch (error) {
+        return next(err);
+    }
+});
+
+//LOGIN
+
+//проверка введенных логина и пароля 
+passport.use(
+    new LocalStrategy(async (username, password, done) => {
+        try {
+            //ищем пользователя с переданными username и password в бд
+            const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+            const user = rows[0];
+
+            //если не нашли, выводим сообщение
+            if (!user) {
+                return done(null, false, { message: 'Incorrect username' });
+            }
+            //если не подходит пароль, выводим сообщение
+            if (user.password !== password) {
+                return done(null, false, { message: 'Incorrect password' });
+            }
+            //если юзер найден и пароль правильный, передаем дальше объект user, полученный из бд, в serializeUser
+            return done(null, user);
+        } catch (err) {
+            return done(err);
+        }
+    })
+);
+
+//берем из user только id, чтобы не передавать в сессию весь объект (небезопасно хранить все данные о пользователе там - хеш пароля, имейл итд. Также объект может быть большим -> расходует память сервера). Затем этот id передается в сессию: req.session.passport = { user: user.id }
+passport.serializeUser((user, done) => {
+    // log(user)
+    done(null, user.id);
+});
+
+/*user.id сохраняется в Session store на сервере. Там же автоматически создается Session ID: 
+Session store:
+    {
+        id: "abc123",
+        passport: { user: 42 }
+    }
+
+В ответе клиенту отправляется кука с Session ID:  Set-Cookie: connect.sid=abc123. Она хранится в браузере. Для каждой сессии создается своя кука - позволяет разлогинивать разные устройства.
+*/
+
+//deserializeUser видит в сессии переданный user.id и достает из БД объект со ВСЕМИ данными пользователя: email, роль итд (они нужны для работы приложения) => всегда свежие данные. Это особенно актуально если свойства пользователя меняются во время сессии (например изменилась роль)
+passport.deserializeUser(async (id, done) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        const user = rows[0];
+
+        //передает user в req.user, который доступен дальше в запросе
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
+});
+
+app.post('/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/'
+})
+);
+
+//LOGOUT
+app.get('/logout', (req, res, next) => {
+    //passport добавляет функцию logout в req object
+    req.logout((err) => {
+        if (err) {
+            return next(err);
+        }
+        res.redirect('/');
+    });
+});
+
 
 //обработчик ошибок
 app.use((err, req, res, next) => {

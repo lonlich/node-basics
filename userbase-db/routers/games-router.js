@@ -85,25 +85,53 @@ gamesRouter.get("/", async (req, res) => {
 //Страница жанра
 gamesRouter.get("/genres/:genre_id", async (req, res) => {
     try {
-        const genreId = req.params.genre_id;
+        const genreId = Number(req.params.genre_id);
 
         //деструктуризация массива - получаем первый (и единственный) элемент массива rows и присваиваем его переменной genre
-        const [genre] = (await pool.query(
-            `SELECT * FROM genres WHERE id = ${genreId}`
-        )).rows;
+        const [genre] = await selectFromTable({
+            table: 'genres',
+            where: {
+                id: { op: '=', value: genreId },
+            }
+        });
+
         //Получаем массив игр из базы по genre_id
-        // console.log("🚀 ~ gamesRouter.get ~ genre:", genre);
-        const games = (
-            await pool.query(`
-                SELECT *
-                FROM games
-                WHERE id IN (
-                    SELECT game_id
-                    FROM games_genres 
-                    WHERE genre_id = ${genreId})
-                `)
-        ).rows;
-        // console.log("🔴 ~ gamesRouter.get ~ games:", games);
+        console.log("🚀 ~ gamesRouter.get ~ genre:", genre);
+        // const games = (
+        //     await pool.query(`
+        //         SELECT *
+        //         FROM games
+        //         WHERE id IN (
+        //             SELECT game_id
+        //             FROM games_genres 
+        //             WHERE genre_id = ${genreId})
+        //         `)
+        // ).rows;
+
+        //получаем айди игр этого жанра из таблицы games_genres
+        const gameIds = await selectFromTable({
+            table: 'games_genres',
+            columns: 'game_id',
+            where: {
+                genre_id: { op: '=', value: genreId }
+            }
+        })
+
+        // const gameIdsMapped = gameIds.map(({ game_id }) => game_id);
+
+        // console.log('🚀 ~ gamesRouter.get ~ gameIds:', gameIds);
+        // console.log("🚀 ~ gamesRouter.get ~ gameIdsMapped:", gameIdsMapped);
+
+        const games = await selectFromTable({
+            table: 'games',
+            where: {
+                id: {
+                    op: 'IN',
+                    value: gameIds.map(({ game_id }) => game_id),
+                },
+            },
+        });
+        console.log("🔴 ~ gamesRouter.get ~ games:", games);
 
         //вызываем функцию для генерации HTML
         const gamesFormatted = formatFieldValue(games, gameSchema, '');

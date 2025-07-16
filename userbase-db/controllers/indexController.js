@@ -11,5 +11,6 @@ export const indexGet = async (req, res) => {
     res.render("index", {
         users: await selectFromTable({ table: 'usernames' }),
         formSchema: userFormSchema,
+        user: req.user,
     });
 };

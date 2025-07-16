@@ -1,6 +1,30 @@
 <a href="/">Главная</a>
 </br>
 <a href="/games">Игры</a>
+</br>
+<a href="/sign-up">Регистрация</a>
+
+<% if (locals.user) { %>
+  <p>Привет, <%= user.username %>!</p>
+  <a href="/logout">Logout</a>
+<% } else { %>
+  <h1>Log In</h1>
+<form action="/login" method="POST">
+    <div>
+        <label for="username">Username</label>
+        <input id="username" name="username" placeholder="username" type="text" required />
+    </div>
+    <div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required />
+    </div>
+    <div>
+        <button type="submit">Log In</button>
+    </div>
+</form>
+<% } %>
+
+
 
 
 <h2>Список пользователей:</h2>

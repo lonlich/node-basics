@@ -221,7 +221,7 @@ export const deleteFromTable = async ({
     return rows;
 };
 
-
+// [ { game_id: 1 }, { game_id: 177 } ]
 
 //USERBASE
 
