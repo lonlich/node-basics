@@ -1,0 +1,28 @@
+<a href="/">На главную</a>
+</br>
+<a href="/clubhouse/add-comment">Добавить коммент</a>
+
+<%- include('partials/login-form') %>
+
+
+<h2>Список комментариев:</h2>
+
+<ul>
+    <% comments.forEach(comment => {%>
+        <li>
+            <% Object.keys(commentFormSchema).forEach(key => {
+                if ((key === 'username' || key === 'created_at') && !user.is_member) {
+                    return
+                }
+
+                %>
+                <p>
+                        <%= commentFormSchema[key].label %>: <%- comment[key] %>
+                    <%  %>
+                </p>
+                <%}); %>
+        </li>
+        <a href="/clubhouse/<%= comment.id %>/edit">Редактировать</a>
+        <a href="/clubhouse/<%= comment.id %>/delete">Удалить</a>
+        <% }) %>
+</ul>

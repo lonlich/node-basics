@@ -103,7 +103,11 @@ export const addToTable = async ({ table, columns, rowData }) => {
 };
 
 //update in table
-export const updateInTable = async ({ table, set, where }) => {
+/*
+Формат аргументов:
+set: объект вида { колонка: значение }
+*/
+export const updateInTable = async ({ table, set, where, returning }) => {
 
     if (!table || !set || !where) {
         warn("Не указана таблица, set или where");
@@ -144,9 +148,10 @@ export const updateInTable = async ({ table, set, where }) => {
         });
     
     whereClause = `WHERE ${conditions.join(" AND ")}`;
+    const returningClause = returning ? `RETURNING ${returning}` : '';
 
     console.log("🚀 ~ updateInTable ~ whereClause:", whereClause)
-    const query = `UPDATE ${table} ${setClause} ${whereClause} RETURNING *`;
+    const query = `UPDATE ${table} ${setClause} ${whereClause} ${returningClause}`;
 
     console.log("🚀 ~ updateInTable ~ query:", query)
     const { rows } = await pool.query(query, queryValues);

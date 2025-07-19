@@ -2,66 +2,45 @@
 </br>
 <a href="/games">Игры</a>
 </br>
-<a href="/sign-up">Регистрация</a>
-
-<% if (locals.user) { %>
-  <p>Привет, <%= user.username %>!</p>
-  <a href="/logout">Logout</a>
-<% } else { %>
-  <h1>Log In</h1>
-<form action="/login" method="POST">
-    <div>
-        <label for="username">Username</label>
-        <input id="username" name="username" placeholder="username" type="text" required />
-    </div>
-    <div>
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" required />
-    </div>
-    <div>
-        <button type="submit">Log In</button>
-    </div>
-</form>
-<% } %>
+<a href="/signup">Регистрация</a>
+<a href="/clubhouse">Clubhouse</a>
+<a href="/givemember">Give Member</a>
 
 
+<%- include('partials/login-form') %>
 
+            <h2>Список пользователей:</h2>
 
-<h2>Список пользователей:</h2>
+            <ul>
+                <% users.forEach(user=> {%>
+                    <li>
+                        <p>
+                            ID: <%= user.id %>
+                        </p>
+                        <% Object.keys(formSchema).forEach(key=> {%>
+                            <p>
+                                <% if (!user[key]) { user[key]='Не заполнено' }%>
+                                    <%= formSchema[key].label %>: <%= user[key] %>
+                                            <% %>
+                            </p>
+                            <%}); %>
+                    </li>
+                    <a href="/<%= user.id %>/edit">Редактировать</a>
+                    <a href="/<%= user.id %>/delete">Удалить</a>
+                    <% }) %>
+            </ul>
 
-<ul>
-    <% users.forEach(user => {%>
-        <li>
-            <p>
-                ID: <%= user.id %>
-            </p>
-            <% Object.keys(formSchema).forEach(key => {%>
-                <p>
-                    <% if (!user[key]) { user[key] = 'Не заполнено'}%>
-                        <%= formSchema[key].label %>: <%= user[key] %>
-                    <%  %>
-                </p>
-                <%}); %>
-        </li>
-        <a href="/<%= user.id %>/edit">Редактировать</a>
-        <a href="/<%= user.id %>/delete">Удалить</a>
-        <% }) %>
-</ul>
+            <a href="/create-user">Создать пользователя</a>
 
-<a href="/create-user">Создать пользователя</a>
+            <h4>Поиск</h4>
+            <form action="/search" method="get">
+                <label for="firstname">Имя</label>
+                <input type="text" id="firstname" name="firstname" value="MIKHAIL" />
+                <label for="email">Почта</label>
+                <input type="text" id="email" name="email" value="navi-lonely@mail.ru" />
+                <button type="submit">Найти</button>
+            </form>
 
-<h4>Поиск</h4>
-<form action="/search" method="get">
-    <label for="firstname">Имя</label>
-    <input type="text" id="firstname" name="firstname" value="MIKHAIL"/>
-    <label for="email">Почта</label>
-    <input type="text" id="email" name="email" value="navi-lonely@mail.ru"/>
-    <button type="submit">Найти</button>
-</form>
-
-<% if (typeof searchQueryResponse !== 'undefined') { %>
-    <pre><%= JSON.stringify(searchQueryResponse, null, 2) %></pre>
-<% } %>
-
-
-
+            <% if (typeof searchQueryResponse !=='undefined' ) { %>
+                <pre><%= JSON.stringify(searchQueryResponse, null, 2) %></pre>
+                <% } %>
