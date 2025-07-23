@@ -28,23 +28,25 @@ app.use(express.urlencoded({ extended: true }));
 
 //RENDER COMMENTS LIST
 export const renderCommentsGet = async (req, res) => {
-
-    const comments = (await pool.query(`
+    const comments = (
+        await pool.query(`
         SELECT users.username, comments.comment_id, comments.content, comments.created_at
         FROM users JOIN comments 
-        ON users.id = comments.author_id`)).rows;
+        ON users.id = comments.author_id`)
+    ).rows;
 
-    console.log("🚀 ~ renderCommentsGet ~ comments:", comments);
+    // console.log('🚀 ~ renderCommentsGet ~ comments:', comments);
 
     // console.log("🚀 ~ renderCommentsGet ~ comments:", comments);
-    console.log("🚀 ~ renderCommentsGet ~ req.user:", req.user);
+    // console.log('🚀 ~ renderCommentsGet ~ req.user:', req.user);
 
+    // console.log('🚀 ~ renderCommentsGet ~ res.locals.user:', res.locals.user);
 
-    res.render("comments-list", {
-            comments: comments,
-            commentFormSchema,
-            user: req.user,
-        });
+    res.render('comments-list', {
+        comments,
+        commentFormSchema,
+        // user: req.user //TODO: почему без явной передачи user req user не подтягивается Username?
+    });
 }
 
 //ADD COMMENT

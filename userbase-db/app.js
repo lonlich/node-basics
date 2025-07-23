@@ -24,7 +24,7 @@ import { body, validationResult } from "express-validator";
 import axios, { Axios } from "axios";
 import pool from "./db/pool.js";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ quiet: true });
 
 //auth
 import session from "express-session";
@@ -77,6 +77,8 @@ import { gameCardSchema } from "./constants/gameFormSchema.js";
 import { clubhouseRouter } from "./routers/clubhouse-router.js";
 import { signUpGet, signUpPost } from "./controllers/signUpController.js";
 import { loadCurrentUser } from "./db/dbUtils.js";
+import { usersRouter } from "./routers/users-router.js";
+import { configurePassport } from "./auth/configurePassport.js";
 
 const app = express();
 
@@ -92,9 +94,6 @@ app.set("layout", "layout");
 app.use(express.json());
 app.set("json spaces", 2);
 app.use(express.urlencoded({ extended: true }));
-
-//set up res.locals
-app.use(setupLocals);
 
 //serve static files
 app.use(express.static(path.join(__dirname, "public")));
@@ -117,121 +116,26 @@ app.use(
         },
     })
 );
+
+//PASSPORT
+
+configurePassport(passport);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-
-
+//set up res.locals
+app.use(setupLocals);
 
 /* MAIN */
-
-//USERBASE
-
-app.get("/", loadCurrentUser, indexGet);
-
-//create user
-app.get("/create-user", createUserGet);
-app.post("/create-user", validateUser, createUserPost);
-
-//edit user
-app.get("/:id/edit", editUserGet);
-app.post("/:id/edit", validateUpdatedUser, editUserPost);
-
-//delete user
-app.get("/:id/delete", deleteUserGet);
-
-//search user
-app.get("/search", searchControllerGet);
-
-//GAMEBASE
-
-app.use("/games", gamesRouter);
 
 //SIGN UP
 app.get('/signup', signUpGet);
 app.post('/signup', signUpPost);
 
-//LOGIN
-
-//проверка введенных логина и пароля 
-passport.use(
-    new LocalStrategy(async (username, password, done) => {
-        try {
-            // log('в localstrategy')
-            //ищем пользователя с переданными username и password в бд
-            const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-            const user = rows[0];
-
-            console.log("🚀 ~ newLocalStrategy ~ user:", user);
-            
-            //если не нашли, выводим сообщение
-            if (!user) {
-                return done(null, false, { message: 'Incorrect username' });
-            }
-
-            const match = await bcrypt.compare(password, user.password);
-            
-            if (!match) {
-                // passwords do not match!
-                return done(null, false, { message: 'Incorrect password' });
-            }
-            //если юзер найден и пароль правильный, передаем дальше объект user, полученный из бд, в serializeUser
-            // log('Пароль правильный, юзер найден')
-            return done(null, user);
-        } catch (err) {
-            return done(err);
-        }
-    })
-);
-
-//берем из user только id, чтобы не передавать в сессию весь объект (небезопасно хранить все данные о пользователе там - хеш пароля, имейл итд. Также объект может быть большим -> расходует память сервера). Затем этот id передается в сессию: req.session.passport = { user: user.id }
-/*
-serializeUser вызывается только ОДИН РАЗ при логине → кладёт user.id (или другое) в сессию.
-*/
-passport.serializeUser((user, done) => {
-    console.log("🚀 ~ passport.serializeUser ~ user:", user);
-
-    done(null, user.id);
-});
-
-
-
-/*user.id сохраняется в Session store на сервере. Там же автоматически создается Session ID: 
-Session store:
-    {
-        id: "abc123",
-        passport: { user: 42 }
-    }
-*/
-
-/*В ответе клиенту отправляется кука с Session ID:  Set-Cookie: connect.sid=abc123. Она хранится в браузере. Для каждой сессии создается своя кука - позволяет разлогинивать разные устройства.
-*/
-
-//deserializeUser видит в сессии переданный user.id и кладет его в req.user.id. Затем по этому id можно доставать актуального юзера из базы в контроллерах
-/*
-deserializeUser вызывается при КАЖДОМ новом HTTP-запросе, если у пользователя есть активная сессия
-*/
-passport.deserializeUser(async (id, done) => {
-    
-    // try {
-
-        //получаем юзера со свежими данными
-        // const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-        // const user = rows[0];
-
-        // console.log("🚀 ~ passport.deserializeUser ~ user:", user);
-
-        //передает user в req.user, который доступен дальше в запросе
-        done(null, { id });
-    // } catch (err) {
-    //     done(err);
-    // }
-});
-
 app.post('/login', passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/'
+    successRedirect: '/clubhouse',
+    failureRedirect: '/FAILURE'
 })
 );
 
@@ -242,13 +146,17 @@ app.get('/logout', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.redirect('/');
+        res.redirect('/clubhouse');
     });
 });
 
+//USERBASE
+app.use('/', usersRouter);
+
+//GAMEBASE
+app.use("/games", gamesRouter);
 
 //CLUBHOUSE
-
 app.use("/clubhouse", clubhouseRouter);
 
 app.get('/givemember', loadCurrentUser, async (req, res) => {
@@ -269,8 +177,6 @@ app.get('/givemember', loadCurrentUser, async (req, res) => {
     res.redirect('/');
 })
 
-
-
 //обработчик ошибок
 app.use((err, req, res, next) => {
     console.error(err.stack); // лог в консоль
@@ -288,6 +194,10 @@ app.listen(PORT, () => {
 //TODO: добавить CONFIRM PASSWORD
 
 //TODO: сделать автологин после signup
+
+//TODO: Добавить валидацию в sign up и login формы (или это уже делается автоматом через passport?)
+
+//TODO: реализовать вывод сообщений Incorrect Login, INcorrect password (из Localstrategy и других мест где есть message). Научиться работать с этими message
 
 //TODO: проверить маршруты на соответствие REST-архитектуре
 

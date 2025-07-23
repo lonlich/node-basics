@@ -11,7 +11,7 @@ export const loadCurrentUser = async (req, res, next) => {
                 where: {
                     id: { op: '=', value: req.user.id }
                 }
-            })
+            });
         
         //записываем юзера в req.user и пробрасываем дальше по запросу
         req.user = user;

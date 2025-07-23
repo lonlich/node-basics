@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ quiet: true });
 
 // All of the following properties should be read from environment variables
 

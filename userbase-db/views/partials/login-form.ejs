@@ -1,4 +1,5 @@
-<% if (locals.user) { %>
+<% if (isAuthenticated) { 
+    console.log(user)%>
     <p>Привет, <%= user.username %>!</p>
     <a href="/logout">Logout</a>
     <% } else { %>
