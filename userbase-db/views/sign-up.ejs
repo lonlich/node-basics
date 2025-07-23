@@ -8,7 +8,8 @@
 
 <body>
     <h1>Sign Up</h1>
-    <form action="/signup" method="POST">
+    
+    <!-- <form action="/signup" method="POST">
         <div>
             <label for="username">Username</label>
             <input id="username" name="username" placeholder="username" type="text" required />
@@ -20,7 +21,38 @@
         <div>
             <button type="submit">Sign Up</button>
         </div>
-    </form>
+    </form> -->
+
+
+
+<%  
+    // const {
+    //     endpoint = '',
+    //     errorsMap = {},
+    // } = formData || {};
+%>
+<form action="<%= endpoint %>" method="post">
+    <% Object.keys(signUpFormSchema).forEach((field) => { %>
+        <div>
+        <label for="<%= field %>"><%= signUpFormSchema[field].label %></label>
+        <input 
+            value="<%= user[field] %>" 
+            type="<%= signUpFormSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+        />
+        </div>
+        <% if (errorsMap[field]) { 
+            console.log('Есть ошибка!');
+            console.log('errorsMap[field]', errorsMap[field])%>
+            <div>
+                <%= errorsMap[field].msg %>
+            </div>
+        <% } %>
+        <% }); %>
+            <button type="submit">Submit</button>
+</form>
+
 </body>
 
 </html>

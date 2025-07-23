@@ -79,6 +79,7 @@ import { signUpGet, signUpPost } from "./controllers/signUpController.js";
 import { loadCurrentUser } from "./db/dbUtils.js";
 import { usersRouter } from "./routers/users-router.js";
 import { configurePassport } from "./auth/configurePassport.js";
+import { validateSignUp } from "./validators/validateSignUp.js";
 
 const app = express();
 
@@ -131,7 +132,7 @@ app.use(setupLocals);
 
 //SIGN UP
 app.get('/signup', signUpGet);
-app.post('/signup', signUpPost);
+app.post('/signup', validateSignUp, signUpPost);
 
 app.post('/login', passport.authenticate('local', {
     successRedirect: '/clubhouse',
@@ -192,8 +193,6 @@ app.listen(PORT, () => {
 });
 
 //TODO: добавить CONFIRM PASSWORD
-
-//TODO: сделать автологин после signup
 
 //TODO: Добавить валидацию в sign up и login формы (или это уже делается автоматом через passport?)
 

@@ -1,4 +1,5 @@
 import { gameCardSchema } from "../constants/gameFormSchema.js";
+import { signUpFormSchema } from "../constants/signUpFormSchema.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
 
 export function setupLocals(req, res, next) {
@@ -19,12 +20,18 @@ export function setupLocals(req, res, next) {
 
     //user-form
     res.locals.userFormSchema = userFormSchema;
+    
     //game-form
     res.locals.gameFieldSchema = gameCardSchema;
+    
+    //signup-form
+    res.locals.signUpFormSchema = signUpFormSchema;
 
     res.locals.user = req.user || {}; //защита от undefined - если юзер не залогинен, то req.user будет undefined и будет создан пустой объект (все проверки с ним будут проходить)
 
     res.locals.isAuthenticated = !!req.user; //если юзер не залогинен, первое отрицание будет true (т.к. req.user undefined), второе - false. Поэтому результат: НЕ авторизован
+
+    res.locals.errorsMap = {};
 
     next();
 }
