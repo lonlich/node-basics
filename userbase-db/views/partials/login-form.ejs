@@ -1,8 +1,7 @@
-<% if (isAuthenticated) { 
-    console.log(user)%>
+<% if (isAuthenticated) { %>
     <p>Привет, <%= user.username %>!</p>
     <a href="/logout">Logout</a>
-    <% } else { %>
+    <% } else { %>  
         <h1>Log In</h1>
         
 

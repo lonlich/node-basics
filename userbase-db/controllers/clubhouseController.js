@@ -100,3 +100,24 @@ export const verifyMembershipGet = async (req, res) => {
 export const verifyMembershipPost = async (req, res) => {
 
 }
+
+//DELETE COMMENT
+export const deleteCommentGet = async(req, res) => {
+    console.log(req.params);
+    console.log("🚀 ~ req.params:", req.params.comment_id);
+
+    const [deletedComment] = await deleteFromTable({
+        table: 'comments',
+        where: {
+            comment_id: { op: '=', value: req.params.comment_id }
+        },
+        returning: '*'
+    })
+
+    console.log("🚀 ~ deletedComment:", deletedComment);
+
+
+    console.log(`🚀 Удаленный комментарий: id: ${deletedComment.comment_id}, контент: ${deletedComment.content}`);
+
+    res.redirect('/clubhouse');
+}

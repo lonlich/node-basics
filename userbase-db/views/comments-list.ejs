@@ -26,8 +26,8 @@
                 <%}); %>
         </li>
         <% if (user.is_member) { %>
-        <a href="/clubhouse/<%= comment.id %>/edit">Редактировать</a>
-        <a href="/clubhouse/<%= comment.id %>/delete">Удалить</a>
+        <a href="/clubhouse/<%= comment.comment_id %>/edit">Редактировать</a>
+        <a href="/clubhouse/<%= comment.comment_id %>/delete">Удалить</a>
         <% } %>
         <% }) %>
 </ul>

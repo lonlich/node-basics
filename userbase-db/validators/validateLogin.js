@@ -10,7 +10,7 @@ export const validateLogin = [
         .isLength({ max: 50 })
         .withMessage('Слишком длинное имя пользователя')
         .custom(value => {
-            console.log('Юзернейм валидирован при логине');
+            // console.log('Юзернейм валидирован при логине');
             return true;
         })
         ,
@@ -18,7 +18,7 @@ export const validateLogin = [
     body('password')
         .notEmpty().withMessage('Пароль обязателен')
         .custom(value => {
-            console.log('Пароль валидирован при логине');
+            // console.log('Пароль валидирован при логине');
             return true;
         }),
 

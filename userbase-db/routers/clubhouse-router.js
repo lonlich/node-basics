@@ -32,7 +32,7 @@ import { genreSchema } from "../constants/gameFormSchema.js";
 import { gameSchema } from "../constants/gameFormSchema.js";
 import { validateAddedGame } from "../validators/validateAddedGame.js";
 import { addGameGet, addGamePost, deleteGameGet, editGameGet, editGamePost } from "../controllers/gameController.js";
-import { addCommentGet, addCommentPost, renderCommentsGet, verifyMembershipGet, verifyMembershipPost } from "../controllers/clubhouseController.js";
+import { addCommentGet, addCommentPost, deleteCommentGet, renderCommentsGet, verifyMembershipGet, verifyMembershipPost } from "../controllers/clubhouseController.js";
 import { loadCurrentUser } from "../db/dbUtils.js";
 import { validateAddedComment } from "../validators/validateAddedComment.js";
 
@@ -53,6 +53,9 @@ clubhouseRouter.post('/add-comment', validateAddedComment, addCommentPost);
 //Ввод секретного кода
 clubhouseRouter.get('/verify-membership', verifyMembershipGet);
 clubhouseRouter.post('/verify-membership', verifyMembershipPost);
+
+//Удаление комментария
+clubhouseRouter.get('/:comment_id/delete', deleteCommentGet);
 
 
 

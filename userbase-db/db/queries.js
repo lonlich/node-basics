@@ -212,15 +212,15 @@ export const deleteFromTable = async ({
 
         whereClause = `WHERE ${conditions.join(" AND ")}`;
     }
-    // console.log("🚀 ~ Object.entries ~ queryValues:", queryValues)
+    console.log("🚀 ~ Object.entries ~ queryValues:", queryValues)
     const returningClause = returning ? `RETURNING ${returning}` : '';
     const query = `DELETE FROM ${table} ${whereClause} ${returningClause}`;
-    // console.log("🚀 ~ query:", query)
+    console.log("🚀 ~ query:", query)
     const { rows } = await pool.query(query, queryValues);
 
-    // console.log("🚀 ~ rows:", rows)
+    console.log("🚀 ~ rows:", rows)
     if (rows.length === 0) {
-        log(`В таблице ${table} ничего не удалено`);
+        log(`Не передан параметр returning, поэтому возврат пустой`);
     }
 
     return rows;

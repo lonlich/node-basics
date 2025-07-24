@@ -44,7 +44,7 @@ app.use(express.json());
 
 export const usersRouter = express.Router();
 
-usersRouter.get("/", loadCurrentUser, indexGet);
+usersRouter.get("/", indexGet);
 
 //create user
 usersRouter.get("/create-user", createUserGet);
