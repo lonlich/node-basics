@@ -93,7 +93,7 @@ export const addToTable = async ({ table, columns, rowData }) => {
         const addQuery = `INSERT INTO ${table} (${columnsString}) VALUES ${valuePlaceholders} RETURNING *`;
 
         const addedData = (await pool.query(addQuery, valueParamsArr));
-        console.log("!!! SUCCESS !!!");
+        console.log(`!!! УСПЕШНО ДОБАВЛЕНО В ТАБЛИЦУ ${table}!!!`);
         // console.log("🚀 ~ addToTable ~ addedData.rows[0]:", addedData.rows)
         return addedData.rows;
 

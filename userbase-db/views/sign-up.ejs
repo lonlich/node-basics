@@ -9,28 +9,6 @@
 <body>
     <h1>Sign Up</h1>
     
-    <!-- <form action="/signup" method="POST">
-        <div>
-            <label for="username">Username</label>
-            <input id="username" name="username" placeholder="username" type="text" required />
-        </div>
-        <div>
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" required />
-        </div>
-        <div>
-            <button type="submit">Sign Up</button>
-        </div>
-    </form> -->
-
-
-
-<%  
-    // const {
-    //     endpoint = '',
-    //     errorsMap = {},
-    // } = formData || {};
-%>
 <form action="<%= endpoint %>" method="post">
     <% Object.keys(signUpFormSchema).forEach((field) => { %>
         <div>
@@ -50,7 +28,7 @@
             </div>
         <% } %>
         <% }); %>
-            <button type="submit">Submit</button>
+        <button type="submit">Submit</button>
 </form>
 
 </body>

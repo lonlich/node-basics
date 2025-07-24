@@ -18,7 +18,7 @@ export const signUpPost = async (req, res, next) => {
 
         const errors = validationResult(req);
 
-        const errorsArr = errors.array();
+        // const errorsArr = errors.array();
 
         // console.log("🚀 ~ signUpPost ~ req,body:", req.body);
         

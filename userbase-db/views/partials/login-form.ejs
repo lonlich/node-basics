@@ -4,18 +4,31 @@
     <a href="/logout">Logout</a>
     <% } else { %>
         <h1>Log In</h1>
-        <form action="/login" method="POST">
+        
+
+        <form action="/login" method="post">
+    <% Object.keys(loginFormSchema).forEach((field) => { %>
+        <div>
+        <label for="<%= field %>"><%= loginFormSchema[field].label %></label>
+        <input 
+            value="<%= user[field] %>" 
+            type="<%= loginFormSchema[field].type %>" 
+            id="<%= field %>" 
+            name="<%= field %>" 
+            <% if (loginFormSchema[field].required) { %>
+            required
+            <% } %>
+        />
+        </div>
+        <% if (errorsMap[field]) { 
+            console.log('Есть ошибка!');
+            console.log('errorsMap[field]', errorsMap[field])%>
             <div>
-                <label for="username">Username</label>
-                <input id="username" name="username" placeholder="username" type="text" required />
+                <%= errorsMap[field].msg %>
             </div>
-            <div>
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" required />
-            </div>
-            <div>
-                <button type="submit">Log In</button>
-            </div>
-        </form>
         <% } %>
+        <% }); %>
+        <button type="submit">Submit</button>
+</form>
+<% } %>
 

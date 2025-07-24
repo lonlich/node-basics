@@ -34,6 +34,7 @@ import { validateAddedGame } from "../validators/validateAddedGame.js";
 import { addGameGet, addGamePost, deleteGameGet, editGameGet, editGamePost } from "../controllers/gameController.js";
 import { addCommentGet, addCommentPost, renderCommentsGet, verifyMembershipGet, verifyMembershipPost } from "../controllers/clubhouseController.js";
 import { loadCurrentUser } from "../db/dbUtils.js";
+import { validateAddedComment } from "../validators/validateAddedComment.js";
 
 const app = express();
 
@@ -47,7 +48,7 @@ clubhouseRouter.get('/', loadCurrentUser, renderCommentsGet);
 
 //Добавление комментария: get, post
 clubhouseRouter.get('/add-comment', addCommentGet);
-clubhouseRouter.post('/add-comment', addCommentPost);
+clubhouseRouter.post('/add-comment', validateAddedComment, addCommentPost);
 
 //Ввод секретного кода
 clubhouseRouter.get('/verify-membership', verifyMembershipGet);

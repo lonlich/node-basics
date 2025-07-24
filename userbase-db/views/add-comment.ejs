@@ -1,0 +1,33 @@
+<% if (!isAuthenticated) { 
+    console.log(user)%>
+    <p><a href="/login">Войдите</a>, чтобы оставить комментарий.</p>    
+    <% 
+} else { %>
+
+
+        <form action="/clubhouse/add-comment" method="post">
+    <% Object.keys(addCommentFormSchema).forEach((field) => { %>
+        <div>
+        <label for="<%= field %>"><%= addCommentFormSchema[field].label %></label>
+        <textarea  
+            id="<%= field %>" 
+            name="<%= field %>" 
+            rows="4"
+            cols="40"
+            <% if (addCommentFormSchema[field].required) { %>
+            required
+            <% } %>
+        ></textarea>
+        </div>
+        
+        <% if (errorsMap[field]) { 
+            console.log('Есть ошибка!');
+            console.log('errorsMap[field]', errorsMap[field])%>
+            <div>
+                <%= errorsMap[field].msg %>
+            </div>
+        <% } %>
+        <% }); %>
+        <button type="submit">Submit</button>
+</form>
+<% } %>

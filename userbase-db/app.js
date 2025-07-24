@@ -80,6 +80,8 @@ import { loadCurrentUser } from "./db/dbUtils.js";
 import { usersRouter } from "./routers/users-router.js";
 import { configurePassport } from "./auth/configurePassport.js";
 import { validateSignUp } from "./validators/validateSignUp.js";
+import { validateLogin } from "./validators/validateLogin.js";
+import { loginGet, loginPost } from "./controllers/loginController.js";
 
 const app = express();
 
@@ -134,7 +136,11 @@ app.use(setupLocals);
 app.get('/signup', signUpGet);
 app.post('/signup', validateSignUp, signUpPost);
 
-app.post('/login', passport.authenticate('local', {
+//LOG IN
+
+app.get('/login', loginGet);
+
+app.post('/login', validateLogin, loginPost, passport.authenticate('local', {
     successRedirect: '/clubhouse',
     failureRedirect: '/FAILURE'
 })
@@ -192,9 +198,9 @@ app.listen(PORT, () => {
     log(`Server running on port ${PORT}!`);
 });
 
-//TODO: добавить CONFIRM PASSWORD
+//TODO: сделать одну универсальную форму с динамическими заполнениями полей из схемы и заменить везде. Добавить ее в partials
 
-//TODO: Добавить валидацию в sign up и login формы (или это уже делается автоматом через passport?)
+//TODO: Добавить валидацию в login форму (или это уже делается автоматом через passport?)
 
 //TODO: реализовать вывод сообщений Incorrect Login, INcorrect password (из Localstrategy и других мест где есть message). Научиться работать с этими message
 

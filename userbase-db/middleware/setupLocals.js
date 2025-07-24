@@ -1,4 +1,6 @@
+import { addCommentFormSchema } from "../constants/addCommentFormSchema.js";
 import { gameCardSchema } from "../constants/gameFormSchema.js";
+import { loginFormSchema } from "../constants/loginFormSchema.js";
 import { signUpFormSchema } from "../constants/signUpFormSchema.js";
 import { userFormSchema } from "../constants/userFormSchema.js";
 
@@ -26,6 +28,12 @@ export function setupLocals(req, res, next) {
     
     //signup-form
     res.locals.signUpFormSchema = signUpFormSchema;
+
+    //login-form
+    res.locals.loginFormSchema = loginFormSchema;
+
+    //add-comment-form
+    res.locals.addCommentFormSchema = addCommentFormSchema;
 
     res.locals.user = req.user || {}; //защита от undefined - если юзер не залогинен, то req.user будет undefined и будет создан пустой объект (все проверки с ним будут проходить)
 

@@ -51,11 +51,45 @@ export const renderCommentsGet = async (req, res) => {
 
 //ADD COMMENT
 export const addCommentGet = (req, res) => {
-
+    res.render('add-comment');
 }
 
-export const addCommentPost = async (req, res) => {
+export const addCommentPost = async (req, res, next) => {
+    try {
+        // console.log('Внутри addCommentPost, блок addCommentPost')
+        const errors = validationResult(req);
 
+        // console.log("🚀 ~ addCommentPost ~ errors.mapped():", errors.mapped());
+
+        // console.log("🚀 req.body:", req.body);
+        // console.log("🚀 user:", req.user);
+
+        
+        if (!errors.isEmpty()) {
+            console.log('есть ошибка!')
+
+                return res.render('add-comment', {
+                        endpoint: `/add-comment`,
+                        errorsMap: errors.mapped(),
+                })
+            }
+
+        //добавляем комментарий в базу
+        const addedComment = await addToTable({
+            table: 'comments',
+            columns: 'author_id, content',
+            rowData: [req.user.id, req.body.content]
+        });
+
+        // console.log("🚀 ~ addCommentPost ~ addedComment:", addedComment);
+
+
+        res.redirect('/clubhouse');
+
+    } catch (error) {
+        console.warn(error);
+        return next(error);
+    }
 }
 
 //VERIFY MEMBERSHIP

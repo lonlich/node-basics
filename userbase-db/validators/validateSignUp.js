@@ -1,6 +1,3 @@
-// import express from "express";
-// const app = express();
-
 import { body, validationResult } from 'express-validator';
 import { selectFromTable } from '../db/queries.js';
 
