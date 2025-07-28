@@ -97,12 +97,12 @@ export async function addGamePost(req, res) {
                 columns: 'id',
                 where: { name: { op: 'IN', value: formInputData?.genre } }
             })
-            // console.log("🚀 ~ addGamePost ~ genreIds:", genreIds)
+            console.log("🚀 ~ addGamePost ~ genreIds:", genreIds)
     
             //- добавить строки с жанрами в таблицу games_genres с полученными ID игры и жанров
             const game_idColumnType  = tableMap.games_genres.find(column => column.columnName === 'game_id').type;
             const gameIdNormalized = normalizeByColumnType(gameId, game_idColumnType)
-            // console.log("🚀 ~ addGamePost ~ gameIdNormalized:", gameIdNormalized)
+            console.log("🚀 ~ addGamePost ~ gameIdNormalized:", gameIdNormalized)
             
             const genreIdsNormalized = [];
             const genre_idColumnType  = tableMap.games_genres.find(column => column.columnName === 'genre_id').type;
@@ -110,7 +110,7 @@ export async function addGamePost(req, res) {
             genreIds.forEach(({id}) => {
                 genreIdsNormalized.push(normalizeByColumnType(id, genre_idColumnType));
             })
-            // console.log("🚀 ~ genreIds.forEach ~ genreIdsNormalized:", genreIdsNormalized)
+            console.log("🚀 ~ genreIds.forEach ~ genreIdsNormalized:", genreIdsNormalized)
             
             const games_genresTableRowData = [];
 
@@ -118,7 +118,7 @@ export async function addGamePost(req, res) {
                 games_genresTableRowData.push([gameId, id]);
             });
             
-            // console.log("🚀 ~ addGamePost ~ values:", games_genresTableRowData)
+            console.log("🚀 ~ addGamePost ~ values:", games_genresTableRowData)
 
             const games_genresAddedTableData = await addToTable({
                 table: 'games_genres',

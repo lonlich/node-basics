@@ -1,9 +1,9 @@
 
 
 export const genreSchema = {
-    rpg: { label: "RPG" },
-    rts: { label: "RTS" },
-    action: { label: "Action" },
+    rpg: { label: "RPG", db_id: 1 },
+    rts: { label: "RTS", db_id: 2 },
+    action: { label: "Action", db_id: 3 },
 };
 
 export const gameSchema = {

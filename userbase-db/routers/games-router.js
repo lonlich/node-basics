@@ -166,11 +166,15 @@ function formatFieldValue(value, schema, endpoint = '') {
     }
     //случай с обработкой множественных значений в полях (жанры, разработчики итд)  - массив
     if (Array.isArray(value)) {
+        log("в Array.isArray()")
+        
         //составление HTML-строки
         return value
             .map((item) => {
+                log('item', item)
                 return `<a href="/games${endpoint}/${item.id} "><span>${
-                    schema[item.name]?.label
+                    // schema[item.name]?.label
+                    item.name
                 }</span></a>`;
             })
             .join(", ");

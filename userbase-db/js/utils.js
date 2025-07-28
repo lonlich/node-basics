@@ -194,5 +194,11 @@ export async function fakeApiCall(delay) {
 
 export const now = new Date(Date.now());
 
+export function logJSONStringify(label, data) {
+  console.log(`🔍 ${label}:`);
+  console.dir(data, { depth: null, colors: true });
+}
+
+
 
 

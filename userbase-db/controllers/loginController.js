@@ -17,6 +17,8 @@ export const loginPost = async (req, res, next) => {
         const errors = validationResult(req);
         
         if (!errors.isEmpty()) {
+                log('Ошибки валидации в loginPost', errors.mapped())
+
                 return res.render('sign-up', {
                         endpoint: `/signup`,
                         errorsMap: errors.mapped(),

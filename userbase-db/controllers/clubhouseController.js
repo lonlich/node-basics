@@ -1,12 +1,14 @@
-import express from "express";
+import express, { json } from 'express';
 const app = express();
-import { body, validationResult } from "express-validator";
-import { gameCardSchema, genreSchema } from "../constants/gameFormSchema.js";
-import { addRowToTable, addToTable, deleteFromTable, selectFromTable } from "../db/queries.js";
-import pool from "../db/pool.js";
-import { tableMap } from "../db/tableMap.js";
-import { updateInTable } from "../db/queries.js";
-import { commentFormSchema } from "../constants/commentFormSchema.js";
+import { body, validationResult } from 'express-validator';
+import { gameCardSchema, genreSchema } from '../constants/gameFormSchema.js';
+import { addRowToTable, addToTable, deleteFromTable, selectFromTable } from '../db/queries.js';
+import pool from '../db/pool.js';
+import { tableMap } from '../db/tableMap.js';
+import { updateInTable } from '../db/queries.js';
+import { commentFormSchema } from '../constants/commentFormSchema.js';
+import { prisma } from '../db/primaClient.js';
+import { logJSONStringify } from '../js/utils.js';
 
 /* АЛГОРИТМ ОТРИСОВКИ ПОЛЕЙ АВТОР и CREATED_AT в ЗАВИСИМОСТИ ОТ СТАТУСА ЮЗЕРА
 
@@ -23,36 +25,35 @@ if (key === 'author' || key === 'created_at') {
     }
 */
 
-
 app.use(express.urlencoded({ extended: true }));
 
 //RENDER COMMENTS LIST
 export const renderCommentsGet = async (req, res) => {
-    const comments = (
-        await pool.query(`
-        SELECT users.username, comments.comment_id, comments.content, comments.created_at
-        FROM users JOIN comments 
-        ON users.id = comments.author_id`)
-    ).rows;
+    try {
+        const comments = (
+            await pool.query(`
+            SELECT users.username, comments.comment_id, comments.content, comments.created_at
+            FROM users JOIN comments 
+            ON users.id = comments.author_id`)
+        ).rows;
+        // console.log('🚀 ~ comments:', comments);
 
-    // console.log('🚀 ~ renderCommentsGet ~ comments:', comments);
+        
 
-    // console.log("🚀 ~ renderCommentsGet ~ comments:", comments);
-    // console.log('🚀 ~ renderCommentsGet ~ req.user:', req.user);
-
-    // console.log('🚀 ~ renderCommentsGet ~ res.locals.user:', res.locals.user);
-
-    res.render('comments-list', {
-        comments,
-        commentFormSchema,
-        // user: req.user //TODO: почему без явной передачи user req user не подтягивается Username?
-    });
-}
+        res.render('comments-list', {
+            comments,
+            commentFormSchema,
+            // user: req.user //TODO: почему без явной передачи user req user не подтягивается Username?
+        });
+    } catch (error) {
+        warn(error);
+    }
+};
 
 //ADD COMMENT
 export const addCommentGet = (req, res) => {
     res.render('add-comment');
-}
+};
 
 export const addCommentPost = async (req, res, next) => {
     try {
@@ -64,60 +65,52 @@ export const addCommentPost = async (req, res, next) => {
         // console.log("🚀 req.body:", req.body);
         // console.log("🚀 user:", req.user);
 
-        
         if (!errors.isEmpty()) {
-            console.log('есть ошибка!')
+            console.log('есть ошибка!');
 
-                return res.render('add-comment', {
-                        endpoint: `/add-comment`,
-                        errorsMap: errors.mapped(),
-                })
-            }
+            return res.render('add-comment', {
+                endpoint: `/add-comment`,
+                errorsMap: errors.mapped(),
+            });
+        }
 
         //добавляем комментарий в базу
         const addedComment = await addToTable({
             table: 'comments',
             columns: 'author_id, content',
-            rowData: [req.user.id, req.body.content]
+            rowData: [req.user.id, req.body.content],
         });
 
         // console.log("🚀 ~ addCommentPost ~ addedComment:", addedComment);
 
-
         res.redirect('/clubhouse');
-
     } catch (error) {
         console.warn(error);
         return next(error);
     }
-}
+};
 
 //VERIFY MEMBERSHIP
-export const verifyMembershipGet = async (req, res) => {
+export const verifyMembershipGet = async (req, res) => {};
 
-}
-
-export const verifyMembershipPost = async (req, res) => {
-
-}
+export const verifyMembershipPost = async (req, res) => {};
 
 //DELETE COMMENT
-export const deleteCommentGet = async(req, res) => {
+export const deleteCommentGet = async (req, res) => {
     console.log(req.params);
-    console.log("🚀 ~ req.params:", req.params.comment_id);
+    console.log('🚀 ~ req.params:', req.params.comment_id);
 
     const [deletedComment] = await deleteFromTable({
         table: 'comments',
         where: {
-            comment_id: { op: '=', value: req.params.comment_id }
+            comment_id: { op: '=', value: req.params.comment_id },
         },
-        returning: '*'
-    })
+        returning: '*',
+    });
 
-    console.log("🚀 ~ deletedComment:", deletedComment);
-
+    console.log('🚀 ~ deletedComment:', deletedComment);
 
     console.log(`🚀 Удаленный комментарий: id: ${deletedComment.comment_id}, контент: ${deletedComment.content}`);
 
     res.redirect('/clubhouse');
-}
+};

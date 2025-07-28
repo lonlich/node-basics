@@ -8,6 +8,11 @@ a {
   color: #eee;
 }
 
+ul li {
+  list-style: none;
+  margin-bottom: 0.5rem;
+}
+
 div {
   margin-top: 10px;
   margin-bottom: 10px;

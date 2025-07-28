@@ -26,6 +26,13 @@ import pool from "./db/pool.js";
 import dotenv from "dotenv";
 dotenv.config({ quiet: true });
 
+//Prisma
+// import { PrismaClient } from './generated/prisma/index.js';
+// const prisma = new PrismaClient();
+
+
+
+
 //auth
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -82,6 +89,7 @@ import { configurePassport } from "./auth/configurePassport.js";
 import { validateSignUp } from "./validators/validateSignUp.js";
 import { validateLogin } from "./validators/validateLogin.js";
 import { loginGet, loginPost } from "./controllers/loginController.js";
+import { prismaQueriesTest } from "./js/prismaQueries.js";
 
 const app = express();
 
@@ -101,6 +109,7 @@ app.use(express.urlencoded({ extended: true }));
 //serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET);
 
 //session
 app.use(
@@ -142,9 +151,13 @@ app.get('/login', loginGet);
 
 app.post('/login', validateLogin, loginPost, passport.authenticate('local', {
     successRedirect: '/clubhouse',
-    failureRedirect: '/FAILURE'
+    failureRedirect: '/login-failed'
 })
 );
+
+app.get('/login-failed', (req, res) => {
+    res.render('login-failed');
+});
 
 //LOGOUT
 app.get('/logout', (req, res, next) => {
@@ -184,6 +197,10 @@ app.get('/givemember', loadCurrentUser, async (req, res) => {
     res.redirect('/');
 })
 
+
+//Prisma Queries Test
+prismaQueriesTest();
+
 //обработчик ошибок
 app.use((err, req, res, next) => {
     console.error(err.stack); // лог в консоль
@@ -192,6 +209,7 @@ app.use((err, req, res, next) => {
         error: err,
     });
 });
+
 
 //запуск сервера
 app.listen(PORT, () => {
