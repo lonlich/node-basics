@@ -10,7 +10,7 @@
     <% comments.forEach(comment => {%>
         <li>
             <% Object.keys(commentFormSchema).forEach(key => {
-                if ((key === 'username' || key === 'created_at') && !user.is_member) {
+                if ((key === 'username' || key === 'created_at') && (!user.role === 'MEMBER' || !user.role === 'ADMIN')) {
                     return
                 }
 
@@ -21,7 +21,7 @@
                 </p>
                 <%}); %>
         </li>
-        <% if (user.is_member) { %>
+        <% if (user.role === 'ADMIN') { %>
         <a href="/clubhouse/<%= comment.comment_id %>/edit">Редактировать</a>
         <a href="/clubhouse/<%= comment.comment_id %>/delete">Удалить</a>
         <% } %>

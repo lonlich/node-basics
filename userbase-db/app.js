@@ -109,8 +109,6 @@ app.use(express.urlencoded({ extended: true }));
 //serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-console.log('SESSION_SECRET:', process.env.SESSION_SECRET);
-
 //session
 app.use(
     session({

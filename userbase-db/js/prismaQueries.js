@@ -31,7 +31,7 @@ export const prismaQueriesTest = async () => {
             password: '123'
         }
     });
-    console.log("🚀 ~ item:", item);
+    // console.log("🚀 ~ item:", item);
 
     // logJSONStringify('firstComment', firstComment);
 
