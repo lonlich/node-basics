@@ -1,29 +1,30 @@
 <%- include('partials/navigation') %>
-</br>
-<a href="/clubhouse/add-comment">Добавить коммент</a>
+    </br>
+    <a href="/clubhouse/add-comment">Добавить коммент</a>
 
-<%- include('partials/login-form') %>
+    <%- include('partials/login-form') %>
 
-<h2>Список комментариев:</h2>
+        <h2>Список комментариев:</h2>
 
-<ul>
-    <% comments.forEach(comment => {%>
-        <li>
-            <% Object.keys(commentFormSchema).forEach(key => {
-                if ((key === 'username' || key === 'created_at') && (!user.role === 'MEMBER' || !user.role === 'ADMIN')) {
-                    return
-                }
+        <ul>
+            <% comments.forEach(comment=> {%>
+                <li>
+                    <% Object.keys(commentFormSchema).forEach(key=> {
+                        if ((key === 'username' || key === 'created_at') && (!user.role === 'MEMBER' || !user.role ===
+                        'ADMIN')) {
+                        return
+                        }
 
-                %>
-                <p>
-                        <%= commentFormSchema[key].label %>: <%- comment[key] %>
-                    <%  %>
-                </p>
-                <%}); %>
-        </li>
-        <% if (user.role === 'ADMIN') { %>
-        <a href="/clubhouse/<%= comment.comment_id %>/edit">Редактировать</a>
-        <a href="/clubhouse/<%= comment.comment_id %>/delete">Удалить</a>
-        <% } %>
-        <% }) %>
-</ul>
+                        %>
+                        <p>
+                            <%= commentFormSchema[key].label %>: <%- comment[key] %>
+                                    <% %>
+                        </p>
+                        <%}); %>
+                </li>
+                <% if (user.role==='ADMIN' ) { %>
+                    <a href="/clubhouse/<%= comment.comment_id %>/edit">Редактировать</a>
+                    <a href="/clubhouse/<%= comment.comment_id %>/delete">Удалить</a>
+                    <% } %>
+                        <% }) %>
+        </ul>

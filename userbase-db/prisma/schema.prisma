@@ -9,22 +9,11 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model Comment {
-  id        Int      @id @default(autoincrement()) @map("comment_id")
-  authorId  Int?     @map("author_id")
-  content   String
-  createdAt DateTime? @default(now()) @db.Timestamp(6) @map("created_at")
-
-  user User? @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@map("comments")
-}
-
 model User {
-  id       Int       @id @default(autoincrement())
-  username String    @unique @db.VarChar(255)
-  password String?   @db.VarChar(255)
-  role     Role      @default(USER)
+  id       Int     @id @default(autoincrement())
+  username String  @unique @db.VarChar(255)
+  password String? @db.VarChar(255)
+  role     Role    @default(USER)
 
   comments Comment[] @relation("UserComments")
 
@@ -33,18 +22,32 @@ model User {
 
 enum Role {
   USER
+  ///Админ может редактировать и удалять
   ADMIN
   MEMBER
 }
 
+model Comment {
+  id        Int       @id @default(autoincrement()) @map("comment_id") //@id индексируется автоматически
+  authorId  Int?      @map("author_id") //индексировать, т.к. используется для JOIN с таблицей users
+  content   String //не индексировать, т.к. просто выводим текст. Индексировать нужно, если есть фильтрация/поиск по контенту
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user User? @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([authorId])
+  @@map("comments")
+}
+
 model Game {
-  id          Int         @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String?
-  price       Decimal?    @db.Decimal(10, 2)
-  createdAt   DateTime?   @default(now()) @db.Timetz(2) @map("created_at")
+  price       Decimal?  @db.Decimal(10, 2)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timetz(2)
 
   genres GameGenre[]
+
 
   @@map("games")
 }
@@ -57,11 +60,15 @@ model GameGenre {
   genre Genre @relation(fields: [genreId], references: [id])
 
   @@id([gameId, genreId])
+  
+  @@index([gameId])
+  @@index([genreId])
+  
   @@map("games_genres")
 }
 
 model Genre {
-  id   Int    @id @default(autoincrement())
+  id   Int     @id @default(autoincrement())
   name String?
 
   games GameGenre[]
