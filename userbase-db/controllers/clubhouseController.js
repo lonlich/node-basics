@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //RENDER COMMENTS LIST
 export const renderCommentsGet = async (req, res) => {
+    const start = Date.now();
     try {
         const comments = (
             await pool.query(`
@@ -38,13 +39,30 @@ export const renderCommentsGet = async (req, res) => {
         ).rows;
         // console.log('🚀 ~ comments:', comments);
 
-        
+        const commentsPrisma = await prisma.comment.findMany({
+            select: { 
+                id: true, 
+                content: true, 
+                createdAt: true, 
+                user: {
+                    select: {
+                        username: true
+                    }
+                } 
+            },
+            // orderBy: { field: 'asc' },
+            // skip: 0,
+            // take: 10
+        });
+        // console.log('🚀 ~ commentsPrisma:', commentsPrisma);
 
+        console.log('⏱ До рендера:', Date.now() - start, 'ms');
         res.render('comments-list', {
             comments,
             commentFormSchema,
             // user: req.user //TODO: почему без явной передачи user req user не подтягивается Username?
         });
+        console.log('⏱ После рендера:', Date.now() - start, 'ms');
     } catch (error) {
         warn(error);
     }

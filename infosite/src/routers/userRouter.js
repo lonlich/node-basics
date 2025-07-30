@@ -53,7 +53,8 @@ export const addCustomReqProperty = (req, res, next) => {
 userRouter.use(timeLog, addCustomReqProperty);
 
 userRouter.get('/', (req, res, next) => {
-    res.send('Это список пользователей');
+    log(req)
+    res.render('users', { title: req.baseUrl });
 });
 
 userRouter.get('/:username/profile', (req, res) => {

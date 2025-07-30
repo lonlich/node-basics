@@ -3,6 +3,7 @@ const app = express();
 import { userbase } from "../storage/userbase.js";
 import { body, validationResult } from "express-validator";
 import { userFormSchema } from "../constants/userFormSchema.js";
+import { getAllUsernames, insertUsername } from "../db/queries.js";
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -20,7 +21,7 @@ export const createUserGet = (req, res) => {
 };
 
 //POST
-export const createUserPost = (req, res) => {
+export async function createUserPost(req, res) {
     const errors = validationResult(req);
     const user = req.body;
     
@@ -38,6 +39,8 @@ export const createUserPost = (req, res) => {
     
     user.id = userbase.getUsers().length + 1;
     userbase.addUser(user);
+
+    await insertUsername(user.firstname);
 
     res.redirect('/');
 }

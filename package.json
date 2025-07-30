@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "git checkout gh-pages && git merge main --no-edit && npm run build && git add dist -f && git commit -m \"Deployment commit\" && git subtree push --prefix dist origin gh-pages && git checkout main",
     "dev": "webpack serve --config webpack.dev.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "testjs": "nodemon userbase-db/testjs.js",
+    "watch-userbase-db": "powershell -Command \"$env:DOTENV_LOG='none'; node --watch userbase-db/app.js\"",
+    "dotenvx-appjs": "npx dotenvx run -f userbase-db/.env.enc -- node userbase-db/app.js"
   },
   "keywords": [],
   "type": "module",
@@ -19,18 +22,35 @@
     "html-loader": "^5.1.0",
     "html-webpack-plugin": "^5.6.3",
     "mini-css-extract-plugin": "^2.9.2",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.12.0",
     "style-loader": "^4.0.0",
+    "ts-node": "^10.9.2",
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1",
     "webpack-merge": "^6.0.1"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.48.3",
+    "@prisma/client": "^6.12.0",
     "axios": "^1.9.0",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^17.0.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
+    "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.18.1",
+    "express-validator": "^7.2.1",
     "formidable": "^3.5.4",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.16.2",
+    "psql": "^0.0.1",
+    "sanitize-html": "^2.17.0",
     "upper-case": "^2.0.2"
   }
 }

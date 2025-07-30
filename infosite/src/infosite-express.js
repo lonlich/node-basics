@@ -16,6 +16,11 @@ import {
     PAGE404_FILE
 } from "./config.js"
 
+import express from "express";
+import expressLayouts from 'express-ejs-layouts';
+import { body, validationResult } from 'express-validator';
+import axios, { Axios } from "axios";
+
 import { serveHTML } from "./serveHTML.js";
 import { userRouter } from "./routers/userRouter.js";
 import { authorRouter } from "./routers/authorRouter.js";
@@ -25,7 +30,6 @@ import fs from "fs";
 import { access } from "fs/promises";
 import { constants } from "fs";
 import { readFile } from "fs/promises";
-import axios, { Axios } from "axios";
 import http from "node:http";
 import url from "node:url";
 import path from "path";
@@ -37,43 +41,38 @@ import formidable from "formidable";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-import express from "express";
 const app = express();
 
-app.use(express.json());
-app.set('json spaces', 2);
-app.use(express.urlencoded({ extended: true }));
+
 
 //use EJS as template engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-/* 
-1. Взять url из запроса (/name)
-2. Получить из url название html-файла
-3. Проверить, есть ли такой файл
-   - если есть => считать его содержимое => показать в браузере
-   - если нет => показать 404.html
-*/
+//use express-ejs-layouts
+app.use(expressLayouts);
+app.set('layout', 'layout')
+
+app.use(express.json());
+app.set('json spaces', 2);
+app.use(express.urlencoded({ extended: true }));
 
 app.use(setupLocals);
 
-//include footer on all pages
-
-
-
-app.use(serveHTML);
+// app.use(serveHTML);
 
 //serve static files
 app.use(express.static(STATIC_FOLDER_PATH));
 
+const users = ["Rose", "Cake", "Biff", "Vasyok"];
 //ejs views
 app.get('/ejs', (req, res) => {
     res.render('ejs-index', { 
         title: 'Тайтл',
         heading: 'Хединг',
         message: 'Мессидж',
-        items: [ 'cat', 'dog', 'bird' ]
+        items: [ 'cat', 'dog', 'bird' ],
+        users
     });
 });
 
@@ -111,6 +110,10 @@ app.post('/submit', (req, res) => {
     const {name, age} = req.body;
     log(`Юзера зовут ${name}, его возраст ${age}`)
     res.send('данные отправлены');
+});
+
+app.get('/create-user', (req, res) => {
+    res.render('create-user');
 });
 
 //user router
