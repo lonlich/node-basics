@@ -34,7 +34,7 @@ const firstUser = await prisma.user.findFirst({
 
 ### 🔍 Создание
 
-#### 'create'
+#### `create`
 Создать одну запись:
 ```ts
 await prisma.user.create({
@@ -45,7 +45,7 @@ await prisma.user.create({
 });
 ```
 
-### `createMany`
+#### `createMany`
 Создать сразу несколько:
 ```ts
 await prisma.user.createMany({
@@ -59,7 +59,7 @@ await prisma.user.createMany({
 
 ### 🛠 Обновление
 
-#### 'update'
+#### `update`
 Обновить запись по уникальному полю:
 ```ts
 await prisma.user.update({
@@ -68,7 +68,7 @@ await prisma.user.update({
 });
 ```
 
-#### 'updateMany'
+#### `updateMany`
 Обновить несколько записей:
 ```ts
 await prisma.user.updateMany({
@@ -79,7 +79,7 @@ await prisma.user.updateMany({
 
 ### ❌ 'Удаление'
 
-#### 'delete'
+#### `delete`
 Удалить одну запись:
 ```ts
 await prisma.user.delete({
@@ -87,7 +87,7 @@ await prisma.user.delete({
 });
 ```
 
-#### 'deleteMany'
+#### `deleteMany`
 Удалить несколько:
 ```ts
 await prisma.user.deleteMany({
@@ -97,7 +97,7 @@ await prisma.user.deleteMany({
 
 ### 🔢 Подсчёт
 
-#### 'count'
+#### `count`
 Подсчитать количество:
 ```ts
 const count = await prisma.user.count({
@@ -152,11 +152,11 @@ model Comment {
 
 #### 🔗 Команды CLI
 
-npx prisma init            # Инициализация
-npx prisma migrate dev     # Создание миграции
-npx prisma db push         # Применение schema без миграции
-npx prisma studio          # GUI интерфейс
-npx prisma generate        # Генерация клиента
+- npx prisma init            # Инициализация
+- npx prisma migrate dev     # Создание миграции
+- npx prisma db push         # Применение schema без миграции
+- npx prisma studio          # GUI интерфейс
+- npx prisma generate        # Генерация клиента
 
 💡 Совет:
 Используй include для загрузки связей, а select — для ограничения полей в ответе.
