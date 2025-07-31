@@ -7,18 +7,14 @@
         <h2>Список комментариев:</h2>
 
         <ul class="comments-list">
-            <% console.log('🚀 ~ user:', user); %>
+            <% //console.log('🚀 ~ user:', user); %>
             <% comments.forEach(comment => {%>
                 <li>
                     <% Object.keys(commentFormSchema).forEach(key => {
-                        if ((key === 'username' || key === 'created_at') && (user.role !== 'MEMBER' && user.role !==
+                        if ((key === 'username' || key === 'createdAt') && (user.role !== 'MEMBER' && user.role !==
                         'ADMIN')) {
-                        console.log('key', key)
-                        console.log('user.role', user.role)
-                        console.log('В return')
                         return
                         }
-                        console.log('В ОСНОВНОМ БЛОКЕ')
                         %>
                         <p>
                             <%= commentFormSchema[key].label %>: <%- comment[key] %>

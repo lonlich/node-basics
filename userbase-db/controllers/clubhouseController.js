@@ -31,15 +31,15 @@ app.use(express.urlencoded({ extended: true }));
 export const renderCommentsGet = async (req, res) => {
     const start = Date.now();
     try {
-        const comments = (
-            await pool.query(`
-            SELECT users.username, comments.comment_id, comments.content, comments.created_at
-            FROM users JOIN comments 
-            ON users.id = comments.author_id`)
-        ).rows;
-        // console.log('🚀 ~ comments:', comments);
-
-        const commentsPrisma = await prisma.comment.findMany({
+        // const comments = (
+        //     await pool.query(`
+        //     SELECT users.username, comments.comment_id, comments.content, comments.created_at
+        //     FROM users JOIN comments 
+        //     ON users.id = comments.author_id`)
+        // ).rows;
+        // // console.log('🚀 ~ comments:', comments);
+        const t1 = Date.now();
+        const commentsRaw = await prisma.comment.findMany({
             select: { 
                 id: true, 
                 content: true, 
@@ -50,19 +50,31 @@ export const renderCommentsGet = async (req, res) => {
                     }
                 } 
             },
-            // orderBy: { field: 'asc' },
-            // skip: 0,
-            // take: 10
         });
-        // console.log('🚀 ~ commentsPrisma:', commentsPrisma);
+        // console.log('🚀 ~ comments:', commentsRaw);
+        const t2 = Date.now();
+        const commentsFormatted = commentsRaw.map(comment => {
+            
+            const formattedComment = {
+                ...comment,
+                author: comment.user.username
+            };
+            delete formattedComment.user;
+            return formattedComment;
+        })
+        // console.log("🚀 ~ commentsFormatted:", commentsFormatted);
+        const t3 = Date.now();
+        // console.log('⏱ До рендера:', Date.now() - start, 'ms')
 
-        console.log('⏱ До рендера:', Date.now() - start, 'ms');
+
         res.render('comments-list', {
-            comments,
+            comments: commentsFormatted,
             commentFormSchema,
             // user: req.user //TODO: почему без явной передачи user req user не подтягивается Username?
         });
-        console.log('⏱ После рендера:', Date.now() - start, 'ms');
+        // console.log('⏱ Prisma:', t2 - t1, 'ms');
+        // console.log('⏱ Форматирование:', t3 - t2, 'ms');
+        // console.log('⏱ После рендера:', Date.now() - start, 'ms');
     } catch (error) {
         warn(error);
     }

@@ -90,6 +90,7 @@ import { validateSignUp } from "./validators/validateSignUp.js";
 import { validateLogin } from "./validators/validateLogin.js";
 import { loginGet, loginPost } from "./controllers/loginController.js";
 import { prismaQueriesTest } from "./js/prismaQueries.js";
+import { driveRouter } from "./routers/drive-router.js";
 
 const app = express();
 
@@ -173,6 +174,9 @@ app.use('/', usersRouter);
 
 //GAMEBASE
 app.use("/games", gamesRouter);
+
+//DRIVE
+app.use('/drive', driveRouter);
 
 //CLUBHOUSE
 app.use("/clubhouse", clubhouseRouter);

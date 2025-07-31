@@ -101,3 +101,27 @@ model Username {
 
   @@map("usernames")
 }
+
+//DRIVE
+
+model Folder {
+    id Int @id @default(autoincrement())
+    name String @db.VarChar(255)
+
+    files File[] @relation("FolderFiles")
+
+    @@map("folders")
+}
+
+model File {
+    id Int @id @default(autoincrement())
+    folderId Int? @map("folder_id")
+    name String
+    size String
+    uploadedAt DateTime? @map("uploaded_at")
+    link String
+
+    folder Folder? @relation("FolderFiles", fields: [folderId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+    @@map("files")
+}
