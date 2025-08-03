@@ -7,7 +7,7 @@ import pool from '../db/pool.js';
 import { tableMap } from '../db/tableMap.js';
 import { updateInTable } from '../db/queries.js';
 import { commentFormSchema } from '../constants/commentFormSchema.js';
-import { prisma } from '../db/primaClient.js';
+import { prisma } from '../db/prismaClient.js';
 import { logJSONStringify } from '../js/utils.js';
 
 /* АЛГОРИТМ ОТРИСОВКИ ПОЛЕЙ АВТОР и CREATED_AT в ЗАВИСИМОСТИ ОТ СТАТУСА ЮЗЕРА

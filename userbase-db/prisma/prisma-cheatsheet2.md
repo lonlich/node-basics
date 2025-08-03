@@ -133,6 +133,30 @@ const data = await prisma.user.findMany({
 });
 ```
 
+### Условная структура для опционального добавления поля
+
+```ts
+const fileAddedToDb = await prisma.file.create({
+  data: {
+    name: req.files['files'][0].originalname,
+    size: (req.files['files'][0].size / 1000).toFixed(1) + ' МБ',
+    link: uploadedFile.secure_url,
+    ...(req.params.folderId && {
+      folder: {
+        connect: {
+          id: Number(req.params.folderId),
+        },
+      },
+    }),
+  },
+});
+
+🔍 Как это работает:
+...(req.params.folderId && {...}) — если req.params.folderId существует (и не undefined / null / ''), то в data добавится объект folder: { connect: { id } }.
+
+Если req.params.folderId отсутствует, folder просто не попадёт в объект data.
+```
+
 ### 🧱 Связи в Prisma
 
 ```ts

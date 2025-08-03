@@ -1,9 +1,9 @@
-body {
+* {
+  padding: 0;
   background-color: #222222;
   color: #eee;
   font-family: "Trebuchet MS", serif;
 }
-
 a {
   color: #eee;
 }
@@ -20,4 +20,12 @@ div {
 
 .comments-list li {
   margin-bottom: 3rem;
+}
+
+.drive-main {
+  margin-top: 1rem;
+}
+
+.file-list .file {
+  margin-top: 3rem;
 }

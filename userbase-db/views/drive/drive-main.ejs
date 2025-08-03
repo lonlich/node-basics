@@ -1,0 +1,16 @@
+<%- include('../partials/navigation') %>
+
+    <%- include('../partials/login-form') %>
+
+        <div class="drive-content">
+            <br>
+            <a href="/drive/create-folder">Создать папку</a>
+            </br>
+            <a href="/drive/upload-file">Загрузить файл</a>
+        </div>
+
+        <h2>Файлы и папки:</h2>
+
+        <%- include('../partials/folders-list') %>
+
+        <%- include('../partials/file-list') %>

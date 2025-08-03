@@ -1,0 +1,16 @@
+<ul class="folder-list">
+    
+    <% //console.log('🚀 ~ user:', user); 
+    // console.log('🚀 ~ files:', files);
+    %>
+    
+    <% folders.forEach(folder => {  %>
+        <li class="folder">
+        <a href="/drive/folder/<%= folder.id %>"><%= folder.name %></a>
+        <% if (folder.fileCount) { %>
+            <span>(<%= folder.fileCount %>)</span>   
+        <% } %>
+        </li>
+    <% });%>
+    
+</ul>

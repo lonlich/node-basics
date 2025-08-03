@@ -1,0 +1,29 @@
+<ul class="file-list">
+            
+            <% //console.log('🚀 ~ user:', user); 
+            // console.log('🚀 ~ files:', files);
+            %>
+            
+            <% files.forEach(file => {  %>
+                <li class="file">
+                <ul class="file-details">
+                <% Object.entries(file).forEach(([ key, fields ]) => { %>
+                    
+                        <% if (!fields.visible) {
+                            return
+                        }
+                        
+                        if (key === 'uploadedAt' && user.role !=='ADMIN' ) { 
+                            return 
+                        } %>
+                        <li class="details-item">
+                            <%= fields.label %>: <%- fields.value %>
+                        </li>
+                        </li>
+                    <% }); %>
+                                
+                    </ul>
+                    
+            <% });%>
+            
+        </ul>

@@ -149,7 +149,7 @@ app.post('/signup', validateSignUp, signUpPost);
 app.get('/login', loginGet);
 
 app.post('/login', validateLogin, loginPost, passport.authenticate('local', {
-    successRedirect: '/clubhouse',
+    successRedirect: '/drive',
     failureRedirect: '/login-failed'
 })
 );
@@ -165,7 +165,7 @@ app.get('/logout', (req, res, next) => {
         if (err) {
             return next(err);
         }
-        res.redirect('/clubhouse');
+        res.redirect('/drive');
     });
 });
 

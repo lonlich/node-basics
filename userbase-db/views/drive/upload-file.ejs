@@ -1,0 +1,14 @@
+<h1>Загрузка файла</h1>
+
+<form action="<%= endpoint %>" method="POST" enctype="multipart/form-data">
+    <div>
+    <label for="filename">Имя файла</label>
+    <input type="text" name="filename" id="filename" value="placeholder">
+    </div>
+    <div>
+    <label for="files">Загрузка файлов</label>
+    <input type="file" name="files" id="files" multiple />
+    </div>
+    <button type="submit">Загрузить</button>
+</form>
+

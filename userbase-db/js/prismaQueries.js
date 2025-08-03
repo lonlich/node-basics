@@ -1,4 +1,4 @@
-import { prisma } from '../db/primaClient.js';
+import { prisma } from '../db/prismaClient.js';
 import { logJSONStringify } from '../js/utils.js';
 
 export const prismaQueriesTest = async () => {

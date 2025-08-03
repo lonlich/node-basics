@@ -6,84 +6,78 @@ import {
     fakeApiCall,
     now,
     //formatPrice,
-} from "./js/utils.js";
+} from './js/utils.js';
 
-import "./js/globals.js";
+import './js/globals.js';
 
-import {
-    __filename,
-    __dirname,
-    PORT,
-    STATIC_FOLDER_PATH,
-    PAGE404_FILE,
-} from "./config.js";
+import { __filename, __dirname, PORT, STATIC_FOLDER_PATH, PAGE404_FILE } from './config.js';
 
-import express from "express";
-import expressLayouts from "express-ejs-layouts";
-import { body, validationResult } from "express-validator";
-import axios, { Axios } from "axios";
-import pool from "./db/pool.js";
+import express from 'express';
+import expressLayouts from 'express-ejs-layouts';
+import { body, validationResult } from 'express-validator';
+import axios, { Axios } from 'axios';
+import pool from './db/pool.js';
 
 // import { serveHTML } from "./serveHTML.js";
-import { setupLocals } from "./middleware/setupLocals.js";
-import { validateUser } from "./validators/validateUser.js";
-import { validateUpdatedUser } from "./validators/validateUpdatedUser.js";
-import { selectFromTable } from "./db/queries.js";
+import { setupLocals } from './middleware/setupLocals.js';
+import { validateUser } from './validators/validateUser.js';
+import { validateUpdatedUser } from './validators/validateUpdatedUser.js';
+import { selectFromTable } from './db/queries.js';
 
 //controllers
-import {
-    createUserGet,
-    createUserPost,
-    editUserGet,
-    editUserPost,
-    deleteUserGet,
-} from "./controllers/userController.js";
-import { searchControllerGet } from "./controllers/searchController.js";
+import { createUserGet, createUserPost, editUserGet, editUserPost, deleteUserGet } from './controllers/userController.js';
+import { searchControllerGet } from './controllers/searchController.js';
 
-import { userbase } from "./storage/userbase.js";
-import { userFormSchema } from "./constants/userFormSchema.js";
+import { userbase } from './storage/userbase.js';
+import { userFormSchema } from './constants/userFormSchema.js';
 
-import fs from "fs";
-import { access } from "fs/promises";
-import { constants } from "fs";
-import { readFile } from "fs/promises";
-import http from "node:http";
-import url from "node:url";
-import path from "path";
-import EventEmitter from "node:events";
+import fs from 'fs';
+import { access } from 'fs/promises';
+import { constants } from 'fs';
+import { readFile } from 'fs/promises';
+import http from 'node:http';
+import url from 'node:url';
+import path from 'path';
+import EventEmitter from 'node:events';
 const eventEmitter = new EventEmitter();
-import { upperCase } from "upper-case";
-import formidable from "formidable";
+import { upperCase } from 'upper-case';
+import formidable from 'formidable';
+import { v2 as cloudinary } from 'cloudinary';
 
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+// import { prisma } from '../db/prismaClient.js';
+import { prisma } from './db/prismaClient.js';
+import { logJSONStringify } from './js/utils.js';
+
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 //routers
-import { indexRouter } from "./routers/index-router.js";
-import { indexGet } from "./controllers/indexController.js";
-import { gamesRouter } from "./routers/games-router.js";
-import { gameCardSchema } from "./constants/gameFormSchema.js";
+import { indexRouter } from './routers/index-router.js';
+import { indexGet } from './controllers/indexController.js';
+import { gamesRouter } from './routers/games-router.js';
+import { gameCardSchema } from './constants/gameFormSchema.js';
+import { fileSchema } from './constants/drive/fileSchema.js';
 
 const app = express();
 
 const selectQueryParams = {
-    table: "genres",
-    columns: ["id"],
+    table: 'genres',
+    columns: ['id'],
     where: {
-        name: { op: "IN", value: ["rpg", "rts"] }, // value: ['rpg', 'rts']
+        name: { op: 'IN', value: ['rpg', 'rts'] }, // value: ['rpg', 'rts']
         // price: { op: '=', value: 69 },
         // title: { op: 'IN', value: ['rpg', 'rts'] },
     },
-    orderBy: "id ASC",
+    orderBy: 'id ASC',
 };
 
 //SELECT
 const testSQLSelect = async ({ table, columns, where, orderBy }) => {
     //составляем строку с колонками. Поддерживается columns в виде массива или строки
-    const columnsString = Array.isArray(columns) ? columns.join(", ") : columns;
+    const columnsString = Array.isArray(columns) ? columns.join(', ') : columns;
 
     //составляем строку с условиями (если они переданы)
-    let whereClause = "";
+    let whereClause = '';
     const values = [];
 
     if (where) {
@@ -91,9 +85,9 @@ const testSQLSelect = async ({ table, columns, where, orderBy }) => {
         let i = 1;
 
         Object.entries(where).forEach(([column, { op, value }]) => {
-            if (op === "IN") {
+            if (op === 'IN') {
                 const placeholders = value.map(() => `$${i++}`);
-                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
+                conditions.push(`${column} ${op} (${placeholders.join(', ')})`);
                 values.push(...value);
             } else {
                 conditions.push(`${column} ${op} $${i++}`);
@@ -101,7 +95,7 @@ const testSQLSelect = async ({ table, columns, where, orderBy }) => {
             }
         });
 
-        whereClause = `WHERE ${conditions.join(" AND ")}`;
+        whereClause = `WHERE ${conditions.join(' AND ')}`;
     }
     const query = `SELECT ${columnsString} FROM ${table} ${whereClause} ORDER BY ${orderBy}`;
     const result = (await pool.query(query, values)).rows;
@@ -111,9 +105,7 @@ const testSQLSelect = async ({ table, columns, where, orderBy }) => {
 // const selectedGenres = await selectFromTable(selectQueryParams);
 // console.log("🚀 ~ selectedGenres:", selectedGenres)
 
-
 //addItem("games_genres", "game_id, genre_id", ["1", selectedGenres]);
-
 
 // a) SELECT id FROM genres
 // WHERE
@@ -132,17 +124,15 @@ const testSQLSelect = async ({ table, columns, where, orderBy }) => {
 
 export const addToTableTest = async ({ table, columns, rowData }) => {
     try {
-        console.log("🚀 rowData:", rowData);
+        console.log('🚀 rowData:', rowData);
         //если в rowData передали передали просто массив значений (для одной строки), оборачиваем его во внешний массив для соответствия формату
-        if(!Array.isArray(rowData[0])) {
+        if (!Array.isArray(rowData[0])) {
             rowData = [rowData];
         }
-        
+
         if (!table || !columns || !rowData) {
-            warn(
-                "Не указаны имя целевой таблицы или колонки или rowData для вставки"
-            );
-            
+            warn('Не указаны имя целевой таблицы или колонки или rowData для вставки');
+
             return;
         }
         //составляем строку с колонками. Поддерживается columns в виде массива или строки
@@ -154,22 +144,21 @@ export const addToTableTest = async ({ table, columns, rowData }) => {
         const valueParamsArr = [];
         let i = 1;
 
-        rowData.forEach(row => {
+        rowData.forEach((row) => {
             valueParamsArr.push(...row);
-            valuePlaceholdersArr.push(`(${row.map(() => `$${i++}`)})`)
+            valuePlaceholdersArr.push(`(${row.map(() => `$${i++}`)})`);
         });
 
         valuePlaceholders = valuePlaceholdersArr.join(', ');
 
         // console.log("🚀 ~ addToTable ~ valuePlaceholders:", valuePlaceholders)
-        
+
         const addQuery = `INSERT INTO ${table} (${columnsString}) VALUES ${valuePlaceholders} RETURNING *`;
 
-        const addedData = (await pool.query(addQuery, valueParamsArr));
-        console.log("!!! SUCCESS !!!");
+        const addedData = await pool.query(addQuery, valueParamsArr);
+        console.log('!!! SUCCESS !!!');
         // console.log("🚀 ~ addToTable ~ addedData.rows[0]:", addedData.rows)
         return addedData.rows;
-
     } catch (error) {
         warn(error);
     }
@@ -179,29 +168,29 @@ export const addToTableTest = async ({ table, columns, rowData }) => {
 export const addRowToTableTest = (addQueryParams) => {
     return addToTable({
         ...addQueryParams,
-        rowData: [addQueryParams.rowData]
+        rowData: [addQueryParams.rowData],
     });
-}
+};
 
 const addQueryParamsGamesGenres = {
-    table: "games_genres",
-    columns: ["game_id", "genre_id"],
+    table: 'games_genres',
+    columns: ['game_id', 'genre_id'],
     rowData: [
         ['1', '2'],
-        ['1', '3']
+        ['1', '3'],
     ],
 };
 
 const addQueryParamsGames = {
-    table: "games",
-    columns: ["name", "description", "price"],
+    table: 'games',
+    columns: ['name', 'description', 'price'],
     rowData: [
         ['escapefromtarkov', 'awesome description', 30],
-        ['fortnite', 'another awesome description description', 30]
+        ['fortnite', 'another awesome description description', 30],
     ],
 };
 
-// addToTable(addQueryParamsGamesGenres); 
+// addToTable(addQueryParamsGamesGenres);
 
 /*
 UPDATE games
@@ -243,51 +232,51 @@ RETURNING *;
 */
 
 export const updateInTableTest = async ({ table, set, where }) => {
-
     if (!table || !set || !where) {
-        warn("Не указана таблица, set или where");
+        warn('Не указана таблица, set или where');
         return;
     }
 
     //формируем setClause
     let setClause = '';
     let i = 1;
-    
 
-    const updates = Object.entries(set).map(([key, value]) => { return `${key} = $${i++}`})
+    const updates = Object.entries(set).map(([key, value]) => {
+        return `${key} = $${i++}`;
+    });
 
     setClause = `SET ${updates.join(', ')}`;
-    console.log("🚀 ~ updateInTable ~ setClause:", setClause)
+    console.log('🚀 ~ updateInTable ~ setClause:', setClause);
     const queryValues = Object.values(set);
-    console.log("🚀 ~ updateInTable ~ queryValues:", queryValues)
+    console.log('🚀 ~ updateInTable ~ queryValues:', queryValues);
 
     //формируем whereClause
     let whereClause = '';
     const conditions = [];
 
     Object.entries(where).forEach(([column, { op, value }]) => {
-            // console.log("🚀 ~ Object.entries ~ value:", value)
-            if (op === "IN") {
-                //если пришел не массив (например - одно значение без массива), превращаем его в массив, чтобы сработал value.map
-                const inValuesArr = Array.isArray(value) ? value : [value];
+        // console.log("🚀 ~ Object.entries ~ value:", value)
+        if (op === 'IN') {
+            //если пришел не массив (например - одно значение без массива), превращаем его в массив, чтобы сработал value.map
+            const inValuesArr = Array.isArray(value) ? value : [value];
             // console.log("🚀 ~ Object.entries ~ value:", value)
 
-                const placeholders = inValuesArr.map(() => `$${i++}`);
-                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
-                // values.push(...inValuesArr);
-                queryValues.push(...value);
-            } else {
-                conditions.push(`${column} ${op} $${i++}`);
-                queryValues.push(value);
-            }
-        });
-    
-    whereClause = `WHERE ${conditions.join(" AND ")}`;
+            const placeholders = inValuesArr.map(() => `$${i++}`);
+            conditions.push(`${column} ${op} (${placeholders.join(', ')})`);
+            // values.push(...inValuesArr);
+            queryValues.push(...value);
+        } else {
+            conditions.push(`${column} ${op} $${i++}`);
+            queryValues.push(value);
+        }
+    });
 
-    console.log("🚀 ~ updateInTable ~ whereClause:", whereClause)
+    whereClause = `WHERE ${conditions.join(' AND ')}`;
+
+    console.log('🚀 ~ updateInTable ~ whereClause:', whereClause);
     const query = `UPDATE ${table} ${setClause} ${whereClause} RETURNING *`;
 
-    console.log("🚀 ~ updateInTable ~ query:", query)
+    console.log('🚀 ~ updateInTable ~ query:', query);
     const { rows } = await pool.query(query, queryValues);
 
     // console.log("🚀 ~ updateInTable ~ rows:", rows)
@@ -296,54 +285,52 @@ export const updateInTableTest = async ({ table, set, where }) => {
     }
 
     return rows;
-
-}
+};
 
 export const deleteFromTableTest = async ({
     table,
-    where, // { fieldName: { op: "IN", value: ["rpg", "rts"] }, 
+    where, // { fieldName: { op: "IN", value: ["rpg", "rts"] },
     returning,
 }) => {
     if (!table) {
-        warn("Не указано имя целевой таблицы в deleteFromTable");
+        warn('Не указано имя целевой таблицы в deleteFromTable');
         return;
     }
 
     //составляем строку с условиями (если они переданы)
-    let whereClause = "";
+    let whereClause = '';
     const queryValues = [];
 
     if (where) {
-        console.log("🚀 ~ where:", where)
+        console.log('🚀 ~ where:', where);
         const conditions = [];
         let i = 1;
 
         Object.entries(where).forEach(([column, { op, value }]) => {
-            console.log("🚀 ~ Object.entries ~ value:", value)
-            if (op === "IN") {
+            console.log('🚀 ~ Object.entries ~ value:', value);
+            if (op === 'IN') {
                 //если пришел не массив (например - одно значение без массива), превращаем его в массив, чтобы сработал value.map
                 const inValuesArr = Array.isArray(value) ? value : [value];
-                console.log("🚀 ~ Object.entries ~ value:", value)
+                console.log('🚀 ~ Object.entries ~ value:', value);
 
                 const placeholders = inValuesArr.map(() => `$${i++}`);
-                conditions.push(`${column} ${op} (${placeholders.join(", ")})`);
+                conditions.push(`${column} ${op} (${placeholders.join(', ')})`);
                 queryValues.push(...inValuesArr);
             } else {
                 conditions.push(`${column} ${op} $${i++}`);
                 queryValues.push(value);
             }
-                
         });
 
-        whereClause = `WHERE ${conditions.join(" AND ")}`;
+        whereClause = `WHERE ${conditions.join(' AND ')}`;
     }
-    console.log("🚀 ~ Object.entries ~ queryValues:", queryValues)
+    console.log('🚀 ~ Object.entries ~ queryValues:', queryValues);
     const returningClause = returning ? `RETURNING ${returning}` : '';
     const query = `DELETE FROM ${table} ${whereClause} ${returningClause}`;
-    console.log("🚀 ~ query:", query)
+    console.log('🚀 ~ query:', query);
     const { rows } = await pool.query(query, queryValues);
 
-    console.log("🚀 ~ rows:", rows)
+    console.log('🚀 ~ rows:', rows);
     if (rows.length === 0) {
         log(`В таблице ${table} ничего не удалено`);
     }
@@ -360,10 +347,6 @@ export const deleteFromTableTest = async ({
 //     returning: "*",
 // })
 
-
-
-
-
 // updateInTable({
 //     table: 'games',
 //     set: {
@@ -378,8 +361,6 @@ export const deleteFromTableTest = async ({
 // })
 
 ///
-
-
 
 /*
 1 Случай: жанр или жанры убираются
@@ -407,6 +388,10 @@ currentGenres: [
 */
 //Жанр c genre_id = 2 добавили
 /*
+
+
+
+
 newGenres: [ 
     { game_id: 172, genre_id: 2 }, 
     { game_id: 172, genre_id: 3 },
@@ -441,3 +426,92 @@ formInputData: { name: 'war', description: '', price: '59', genre: [ 'rpg', 'rts
     price: '60.00',
     created_at: '12:43:24.25+00'
 */
+
+async function renderFiles() {
+    const filesRaw = await prisma.file.findMany({
+        // where: { field: value },
+        // orderBy: { field: 'asc' },
+        // skip: 0,
+        // take: 10
+    });
+    console.log('🚀 ~ filesRaw:', filesRaw);
+
+    const filesMappedToSchema = filesRaw.map((file) => {
+        return Object.fromEntries(
+            Object.entries(file).map(([key, value]) => [
+                key,
+                {
+                    value,
+                    label: fileSchema[key]?.label || '',
+                    type: fileSchema[key]?.type || '',
+                    visibleInform: fileSchema[key]?.visibleInform ?? true, //возвращает true, если левый операнд null или undefined
+                },
+            ])
+        );
+    });
+    console.log('🚀 ~ filesMappedToSchema:', filesMappedToSchema);
+}
+// renderFiles();
+
+//Cloudinary
+
+function cloudinaryUpload() {
+    cloudinary.uploader
+        .upload('migration.sql', {
+            resource_type: 'raw',
+            use_filename: true,
+            unique_filename: false,
+        })
+        .then((result) => console.log(result));
+}
+
+// cloudinaryUpload();
+
+/*
+{
+    asset_id: '33f3c72c167cf3321aff7b2361fc46ba',      
+    public_id: 'migration.sql',
+    version: 1754151698,
+    version_id: '79684ac8c036ba7989195d40ebd946bd',    
+    signature: '56838ee682b74a19b5da1ed7b48246ee26e13123',
+    resource_type: 'raw',
+    created_at: '2025-08-02T16:21:38Z',
+    tags: [],
+    bytes: 3876,
+    type: 'upload',
+    etag: '6e93e32393f150425965f5d26591eb96',
+    placeholder: false,
+    url: 'http://res.cloudinary.com/dftol96y5/raw/upload/v1754151698/migration.sql',
+    secure_url: 'https://res.cloudinary.com/dftol96y5/raw/upload/v1754151698/migration.sql',
+    asset_folder: '',
+    display_name: 'migration.sql',
+    overwritten: true,
+    original_filename: 'migration',
+    api_key: '512251146511688'
+}
+*/
+
+async function createFolder() {
+
+const createdFolder = await prisma.folder.create({
+    data: {
+        name: 'testfolder',
+        }
+    });
+}
+
+async function getFolders() {
+    try {
+        const folders = await prisma.folder.findMany({
+            include: { files: true }
+        });
+        console.log(folders);
+        logJSONStringify("folders", folders);
+        
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// createFolder();
+getFolders()

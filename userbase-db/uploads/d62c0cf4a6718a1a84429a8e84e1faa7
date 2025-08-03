@@ -1,0 +1,19 @@
+Net Uptime Monitor Failure Log (NetUptimeMonitor.com)
+UNLICENSED TRIAL VERSION
+ 
+=======================================
+26.09.2023 19:27:21	Log Start
+Ping Target 1: 8.8.8.8 - Google
+Ping Target 2: 4.2.2.2 - Level3
+Ping Target 3: 1.1.1.1 - Cloudflare
+Wait for Ping (milliseconds): 200
+Test Interval (seconds): 5
+Log Failure Longer Than (seconds): 5
+---------------------------------------
+Failure Start      	Length
+-------------      	------
+---------------------------------------
+26.09.2023 19:27:30	Log End
+Monitor Duration	0:00:01
+Failure Count		0
+=======================================

@@ -26,6 +26,9 @@ import pool from "../db/pool.js";
 // import { fileURLToPath } from "url";
 
 import express from "express";
+import { renderFolderGet, renderMainGet, uploadFileGet, uploadFilePost } from "../controllers/driveController.js";
+import upload from "../middleware/multer-config.js";
+import { parseUploadFields } from "../middleware/parseUploadFields.js";
 // import { selectFromTable } from "../db/queries.js";
 // import { gameCardSchema as gameCardSchema } from "../constants/gameFormSchema.js";
 // import { genreSchema } from "../constants/gameFormSchema.js";
@@ -47,17 +50,21 @@ export const driveRouter = express.Router();
 driveRouter.get('/', renderMainGet);
 
 //Создание папки: get, post
-driveRouter.get('/create-folder', createFolderGet);
-driveRouter.post('/create-folder', createFolderPost);
+// driveRouter.get('/create-folder', createFolderGet);
+// driveRouter.post('/create-folder', createFolderPost);
 
-//Удаление папки
-driveRouter.get('/:folderName/delete', deleteFolderGet);
+//Страница папки
+driveRouter.get('/folder/:folderId', renderFolderGet);
 
-//Загрузка файла
-driveRouter.get('upload-file', uploadFileGet);
-driveRouter.post('upload-file', uploadFilePost);
+// //Удаление папки
+// driveRouter.get('/:folderName/delete', deleteFolderGet);
 
-//Карточка файла
-driveRouter.get('file-details', fileDetailsGet);
+// //Загрузка файла
+driveRouter.get(['/upload-file', '/folder/:folderId/upload-file'], uploadFileGet);
+// driveRouter.post('/upload-file', upload.array('files', 3), uploadFilePost);
+driveRouter.post(['/upload-file', '/folder/:folderId/upload-file'], parseUploadFields, uploadFilePost);
+
+// //Карточка файла
+// driveRouter.get('/file-details', fileDetailsGet);
 
 
