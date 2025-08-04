@@ -11,6 +11,8 @@ import { fileSchema } from '../constants/drive/fileSchema.js';
 import { prisma } from '../db/prismaClient.js';
 import { logJSONStringify } from '../js/utils.js';
 import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
+// import { readFile } from "fs/promises";
 
 // app.use(express.urlencoded({ extended: true }));
 
@@ -23,7 +25,7 @@ export const renderMainGet = async (req, res) => {
             // skip: 0,
             // take: 10
         });
-        console.log('🚀 ~ filesRaw:', filesRaw);
+        // console.log('🚀 ~ filesRaw:', filesRaw);
 
         const filesFormatted = filesRaw.map((file) => {
             return Object.fromEntries(
@@ -34,7 +36,7 @@ export const renderMainGet = async (req, res) => {
                         label: fileSchema[key]?.label || '',
                         type: fileSchema[key]?.type || '',
                         visible: fileSchema[key]?.visible ?? true, //возвращает true, если левый операнд null или undefined
-                        size: Number(file.size) //конвертация из Big Int
+                        size: Number(file.size), //конвертация из Big Int
                     },
                 ])
             );
@@ -42,16 +44,14 @@ export const renderMainGet = async (req, res) => {
         // console.log('🚀 ~ filesFormatted:', filesFormatted);
 
         const foldersRaw = await prisma.folder.findMany({
-            include: { files: true }
+            include: { files: true },
         });
         // console.log("🚀 ~ foldersRaw:", foldersRaw);
 
-        const foldersFormatted = foldersRaw.map(f => {
-            return {
-                ...f,
-                fileCount: f.files.length > 0 ? f.files.length : null
-            }
-        })
+        const foldersFormatted = foldersRaw.map((f) => ({
+            ...f,
+            fileCount: f.files.length > 0 ? f.files.length : null,
+        }));
         // console.log("🚀 ~ foldersFormatted:", foldersFormatted);
 
         res.render('drive/drive-main', {
@@ -66,11 +66,11 @@ export const renderMainGet = async (req, res) => {
 //RENDER FOLDER
 export const renderFolderGet = async (req, res) => {
     try {
-        log('Я В ПАПКЕ')
+        log('Я В ПАПКЕ');
         const folderFilesRaw = await prisma.file.findMany({
-            where: { folderId: +req.params.folderId}
+            where: { folderId: +req.params.folderId },
         });
-        console.log("🚀 ~ folderFilesRaw:", folderFilesRaw);
+        console.log('🚀 ~ folderFilesRaw:', folderFilesRaw);
 
         const filesMappedToSchema = folderFilesRaw.map((file) => {
             return Object.fromEntries(
@@ -89,22 +89,21 @@ export const renderFolderGet = async (req, res) => {
 
         res.render('drive/folder', {
             files: filesMappedToSchema,
-            folderId: +req.params.folderId
-
+            folderId: +req.params.folderId,
         });
     } catch (error) {
         warn(error);
     }
-}
+};
 
 //UPLOAD FILE
 export const uploadFileGet = async (req, res) => {
     try {
         const folderId = +req.params.folderId || null;
         // console.log("🚀 ~ folderId:", folderId);
-        
+
         res.render('drive/upload-file', {
-            endpoint: folderId ? `/drive/folder/${folderId}/upload-file` : `/drive/upload-file`
+            endpoint: folderId ? `/drive/folder/${folderId}/upload-file` : `/drive/upload-file`,
         });
     } catch (error) {
         warn(error);
@@ -113,44 +112,66 @@ export const uploadFileGet = async (req, res) => {
 
 export const uploadFilePost = async (req, res) => {
     try {
+        log('Я здесь');
         // logJSONStringify("req.body", req.body);
         // log(req.files);
 
-        log(req.files['files']);
+        console.log("🚀 ~ req.files['files']:", req.files['files']);
 
-        const uploadedFile = await cloudinary.uploader.upload(req.files['files'][0].path, {
-            resource_type: 'raw',
-            use_filename: true,
-            unique_filename: false,
-        });
-        console.log("🚀 ~ uploadedFile:", uploadedFile);
+        // const uploadedFile = await cloudinary.uploader.upload(req.files['files'][0].buffer, {
+        //     resource_type: 'raw',
+        //     use_filename: true,
+        //     unique_filename: false,
+        // });
+        // console.log("🚀 ~ uploadedFile:", uploadedFile);
 
-        const fileAddedToDb = await prisma.file.create({
-            data: {
-                name: req.files['files'][0].originalname,
-                // size: (req.files['files'][0].size / 1000000).toFixed(1) + ' МБ',
-                size: req.files['files'][0].size,
-                link: uploadedFile.secure_url,
-                //условное добавление - если req.params.folderId существует (загрузка НЕ из корневой папки)
-                ...(req.params.folderId && {
-                folder: {
-                    connect: {
-                        id: Number(req.params.folderId)
-                    }
-                }})
-            },
-        });
-        console.log("🚀 ~ fileAddedToDb:", fileAddedToDb)
+        for (const file of req.files['files']) {
+            const byteArrayBuffer = file.buffer;
+            const uploadedFile = await new Promise((resolve) => {
+                cloudinary.uploader
+                    .upload_stream(
+                        {
+                            resource_type: 'raw',
+                            use_filename: true,
+                            unique_filename: false,
+                        },
+                        (error, uploadResult) => {
+                            if (error) return reject(error);
+                            resolve(uploadResult);
+                        }
+                    )
+                    .end(byteArrayBuffer);
+            });
+            console.log('🚀 ~ uploadedFile:', uploadedFile);
 
-        res.redirect('/drive');
+            const fileAddedToDb = await prisma.file.create({
+                data: {
+                    name: file.originalname,
+                    // size: (req.files['files'][0].size / 1000000).toFixed(1) + ' МБ',
+                    size: file.size,
+                    link: uploadedFile.secure_url,
+                    //условное добавление - если req.params.folderId существует (загрузка НЕ из корневой папки)
+                    ...(req.params.folderId && {
+                        folder: {
+                            connect: {
+                                id: Number(req.params.folderId),
+                            },
+                        },
+                    }),
+                },
+            });
+            console.log('🚀 ~ fileAddedToDb:', fileAddedToDb);
+        }
+
+        const redirectEndpoint = req.params.folderId ? `/drive/folder/${req.params.folderId}` : `/drive`;
+
+        res.redirect(redirectEndpoint);
     } catch (error) {
         warn(error);
     }
 };
 
-//TODO: переделать на memory storage
-// валидация загруженных файлов
-//загрузка нескольких файлов
+//TODO: можно добавить параллельную загрузку через Promise.all (см. чат https://chatgpt.com/c/688e2b68-4f78-832d-92f0-6934927e368b)
 
 //result
 
